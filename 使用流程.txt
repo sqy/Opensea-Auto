@@ -1,0 +1,6 @@
+1、安装python
+2、安装selenium，win+R输入cmd，pip install selenium
+3、安装Chrome浏览器
+4、下载Chrome浏览器对应版本的chromedriver，并放置到Python文件夹内Scripts文件夹下
+
+Chrome版本号查询，浏览器输入chrome://version
