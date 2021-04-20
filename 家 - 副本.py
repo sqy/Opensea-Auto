@@ -32,19 +32,20 @@ def create_coll(pic_path,pic_name,pic_desc):
     #加名字重复情况处理
     driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[5]/div/div/div/form/div[3]/textarea').send_keys(pic_desc)
     driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[5]/div/div/div/form/div[4]/div').click()
-#给根目录文件夹内的全部文件拼装绝对路径
+#获取根目录文件夹内照片绝对路径地址
 def get_files(pics_path):
-    listdir = os.listdir(pics_path)  #定位文件夹位置
-    filepath = os.getcwd()  #当前工作目录
-    allfile = []  #定义为数组
+    listdir = os.listdir(pics_path)
+    filepath = os.getcwd()
+    allfile = []
     for file in listdir:
-        allfile.append(filepath + '\\' + pics_path + '\\' + file)  #拼装地址
+        allfile.append(filepath + '\\' + pics_path + '\\' + file)
     return allfile
 
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
     sign_in_metamask(password_metamask)
-    pic_path = get_files(r"cover")[0]
+    #pic_path = get_files(r"pic")[0]
+    #pic_path = r"D:\Opensea-Auto\pic\图片.jpg"
     pic_name = r"123"
     pic_desc = r"123"
-    create_coll(pic_path,pic_name,pic_desc)
+    create_coll(get_files(r"pic")[0],pic_name,pic_desc)

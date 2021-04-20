@@ -1,16 +1,17 @@
 import os
+import time
 
-
-def getabsroute(path):
-    listdir = os.listdir(path)
+def get_files(pics_path):
+    listdir = os.listdir(pics_path)
     filepath = os.getcwd()
     allfile = []
     for file in listdir:
-        allfile.append(filepath + '\\' + file)
+        allfile.append(filepath + '\\' + path + '\\' + file)
     return allfile
     #print(allfile)
 
+print(os.getcwd())
+print(get_files(r"pic"))
+print(get_files(r"pic")[0])
+print(get_files(r"pic")[1])
 
-print(getabsroute(r"pic"))
-print(getabsroute(r"pic")[0])
-print(getabsroute(r"pic")[1])
