@@ -6,12 +6,10 @@ def get_files(pics_path):
     filepath = os.getcwd()
     allfile = []
     for file in listdir:
-        allfile.append(filepath + '\\' + path + '\\' + file)
+        allfile.append(filepath + '\\' + pics_path + '\\' + file)
     return allfile
     #print(allfile)
 
-print(os.getcwd())
-print(get_files(r"pic"))
-print(get_files(r"pic")[0])
-print(get_files(r"pic")[1])
-
+a = get_files(r"pic")
+for i in a:
+    print(i)
