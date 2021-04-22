@@ -1,4 +1,7 @@
 from selenium import webdriver  # 引入selenium模块
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from PIL import Image
 import xlrd   # 引入Excel读取模块
 from xlutils.copy import copy        #导入copy模块
@@ -12,7 +15,7 @@ option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/") # 加载Chrome全部插件
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
-driver.implicitly_wait(20)  # 设置等待20秒钟
+driver.implicitly_wait(9999)  # 设置等待9999秒钟
 driver.get(url)  # 设置打开网页
 
 # 切换页面
@@ -85,7 +88,7 @@ def get_pt():
 # 创建NFT
 def add_item():
     get_pt()
-    coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[2]/a/div/a/div'
+    coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[3]/a/div/a/div'
     pics = get_files(r"pic")  # 完成第一个数组（图片）
     datafile_path = r'file_do.xls'  # 表格位置
     data = xlrd.open_workbook(datafile_path)  # 获取数据
@@ -95,6 +98,7 @@ def add_item():
     descs = []
     prop_type = []
     prop_name = []
+    prs = []
     for i in range(ncols):
         if i == 1:
             names = table.col_values(i)
@@ -104,26 +108,40 @@ def add_item():
             prop_type = table.col_values(i)
         if i == 4:
             prop_name = table.col_values(i)
-    for i,j,k,l,n in zip(pics,names,descs,prop_type,prop_name):
+        if i == 5:
+            prs = table.col_values(i)
+    for i,j,k,l,n,m in zip(pics,names,descs,prop_type,prop_name,prs):
         driver.find_element_by_xpath(coll).click()
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div').click()  # 点击"Add New Item"
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[1]/div/div/div/input').send_keys(i)  # 上传图片
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[2]/div/div[1]/input').send_keys(j)  # 图片名称
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[4]/textarea').send_keys(k)  # 描述
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[5]/div/div[2]/div/div/div').click()  # 增加Properties
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[5]/div/div[2]/div/div').click()  # 增加Properties
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
-        driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div/div').click()
+        driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div').click()  # sell
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div[1]/a/div').click()  # sell
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input').send_keys(m)  # 输入价格 #输入框只能输入数字
+
+   # {'text': "".join(keys_to_typing(value)),
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
+
+        while True:
+            try:
+                time.sleep(1)
+                change_window(1)
+                driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                change_window(0)
+                break
+            except:
+                pass
+        time.sleep(3)
+        driver.get(url)  # 回到收藏夹首页
 
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
     sign_in_metamask(password_metamask)
-    #if get_files(r"cover") == []:
     add_item()
 
-#pic_name = r"123"
-#pic_desc = r"123"
-#create_coll(pic_name, pic_desc)
-#签名xpath:'//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]'
-#签名需切窗口
