@@ -9,11 +9,11 @@ import os
 plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
-option.add_argument("--user-data-dir="+r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/") # 加载Chrome全部插件
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
+option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
-driver.implicitly_wait(20)  # 设置等待20秒钟
-driver.get(url)  # 设置打开网页
+driver.implicitly_wait(9999)  # 设置等待9999秒钟
+driver.get(r'https://opensea.io/wallet/locked?referrer=%2Faccount')  # 设置打开网页
 
 # 切换页面
 def change_window(number):
@@ -22,11 +22,16 @@ def change_window(number):
 # 登录metamask钱包
 def sign_in_metamask(password_metamask):
     driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div/div[1]/div[2]/div/div').click()  # 点击登录键
-    time.sleep(3)
-    change_window(1)  # 切换至弹出页面
-    driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
-    driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div/button/span').click()  # 点确定
-    change_window(0)  # 切换回主页面
+    while True:
+        try:
+            time.sleep(1)
+            change_window(1)  # 切换至弹出页面
+            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
+            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div/button/span').click()  # 点确定
+            change_window(0)  # 切换回主页面
+            break
+        except:
+            pass
 # 创建收藏夹（未完成）
 def create_coll(pic_name,pic_desc):
     driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[1]/div/div[1]/div').click()
@@ -84,18 +89,21 @@ def get_pt():
     wb.save('file_do.xls')   # 保存文件
 # 创建NFT
 def add_item():
-    #get_pt()
+    get_pt()
     coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[2]/a/div/a/div'
     pics = get_files(r"pic")  # 完成第一个数组（图片）
     datafile_path = r'file_do.xls'  # 表格位置
     data = xlrd.open_workbook(datafile_path)  # 获取数据
     table = data.sheet_by_name(r'item')  # 表格内工作表
     ncols = table.ncols  # 定义列数
+    file_num = []
     names = []
     descs = []
     prop_type = []
     prop_name = []
     for i in range(ncols):
+        if i == 0:
+            file_num = table.col_values(i)
         if i == 1:
             names = table.col_values(i)
         if i == 2:
@@ -104,26 +112,41 @@ def add_item():
             prop_type = table.col_values(i)
         if i == 4:
             prop_name = table.col_values(i)
-    for i,j,k,l,n in zip(pics,names,descs,prop_type,prop_name):
+    for i,j,k,l,n,m,o in zip(pics,names,descs,prop_type,prop_name,table.col_values(5),file_num):
         driver.find_element_by_xpath(coll).click()
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div').click()  # 点击"Add New Item"
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[1]/div/div/div/input').send_keys(i)  # 上传图片
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[2]/div/div[1]/input').send_keys(j)  # 图片名称
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[4]/textarea').send_keys(k)  # 描述
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[5]/div/div[2]/div/div').click()  # 增加Properties
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[5]/div/div[2]/div/div').click()  # 增加Properties
+                break
+            except:
+                driver.execute_script("window.scrollTo(0,200);")
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
-        driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div/div').click()
+        driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div').click()  # sell
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div[1]/a/div').click()  # sell
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input').send_keys(str(m))  # 输入价格 #输入框只能输入数字
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
+        while True:
+            try:
+                time.sleep(1)
+                change_window(1)
+                driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                change_window(0)
+                break
+            except:
+                pass
+        time.sleep(3)
+        print("pic number:{}".format(int(o)))
+        driver.get(url)  # 跳转到收藏夹
 
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
     sign_in_metamask(password_metamask)
-    #if get_files(r"cover") == []:
+    driver.get(url)  # 跳转到收藏夹
     add_item()
-
-#pic_name = r"123"
-#pic_desc = r"123"
-#create_coll(pic_name, pic_desc)
-#签名xpath:'//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]'
-#签名需切窗口
