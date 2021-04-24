@@ -1,4 +1,6 @@
 from selenium import webdriver  # 引入selenium模块
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import ChromeOptions
 from PIL import Image
 import xlrd   # 引入Excel读取模块
 from xlutils.copy import copy        #导入copy模块
@@ -6,12 +8,30 @@ import time
 import os
 
 # 启用带插件的浏览器
-plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
+plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
-option = webdriver.ChromeOptions()
-option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
-option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
-driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
+# 实现无可视化界面操作
+chrome_options = Options()
+chrome_options.add_argument('--headless') #浏览器不提供可视化页面. linux下如果系统不支持可视化不加这条会启动失败
+chrome_options.add_argument('--disable-gpu') #谷歌文档提到需要加上这个属性来规避bug
+chrome_options.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
+#针对UA请求头的操作，防止因为没有添加请求头导致的访问被栏截了
+chrome_options.add_argument('User-Agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) >AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 Edg/87.0.664.57')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--hide-scrollbars') #隐藏滚动条, 应对一些特殊页面
+chrome_options.add_argument('blink-settings=imagesEnabled=false') #不加载图片, 提升速度
+#实现规避操作
+option = ChromeOptions()
+option.add_experimental_option('excludeSwitches', ['enable-automation'])
+driver = webdriver.Chrome(chrome_options=chrome_options, options=option)  # 更改Chrome默认选项
+script = '''
+           Object.defineProperty(navigator, 'webdriver', {
+               get: () => undefined
+           })
+           '''
+driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": script})
+
+
 driver.implicitly_wait(9999)  # 设置等待9999秒钟
 driver.get(url)  # 设置打开网页
 
@@ -127,12 +147,10 @@ def add_item():
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
-        time.sleep(1)
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建 #Missing collection //*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[2]/span
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div').click()  # sell
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div[1]/a/div').click()  # sell
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input').send_keys(str(m))  # 输入价格 #输入框只能输入数字
-        time.sleep(1)
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
         while True:
             try:
@@ -144,8 +162,8 @@ def add_item():
             except:
                 pass
         time.sleep(3)
-        print("pic number:{}".format(int(o)))
-        driver.get(url)  # 跳转到收藏夹
+        print("pic number:{}".format(o))
+        driver.get(url)  # 回到收藏夹首页
 
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
