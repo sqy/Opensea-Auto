@@ -13,7 +13,7 @@ option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
 option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
 driver.implicitly_wait(9999)  # 设置等待9999秒钟
-driver.get(r'https://opensea.io/wallet/locked?referrer=%2Faccount')  # 设置打开网页
+driver.get(url)  # 设置打开网页
 
 # 切换页面
 def change_window(number):
@@ -90,7 +90,7 @@ def get_pt():
 # 创建NFT
 def add_item():
     get_pt()
-    coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[2]/a/div/a/div'
+    coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[3]/a/div/a/div'
     pics = get_files(r"pic")  # 完成第一个数组（图片）
     datafile_path = r'file_do.xls'  # 表格位置
     data = xlrd.open_workbook(datafile_path)  # 获取数据
@@ -114,7 +114,14 @@ def add_item():
             prop_name = table.col_values(i)
     for i,j,k,l,n,m,o in zip(pics,names,descs,prop_type,prop_name,table.col_values(5),file_num):
         driver.find_element_by_xpath(coll).click()
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div').click()  # 点击"Add New Item"
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div').click()  # 点击"Add New Item"
+                break
+            except:
+                driver.get(url)  # 跳转到收藏夹
+                time.sleep(1)
+                driver.find_element_by_xpath(coll).click()
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[1]/div/div/div/input').send_keys(i)  # 上传图片
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[2]/div/div[1]/input').send_keys(j)  # 图片名称
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[4]/textarea').send_keys(k)  # 描述
@@ -126,12 +133,22 @@ def add_item():
                 driver.execute_script("window.scrollTo(0,200);")
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
-        driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
+                break
+            except:
+                time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建 #Missing collection //*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[2]/span
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div').click()  # sell
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div[1]/a/div').click()  # sell
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input').send_keys(str(m))  # 输入价格 #输入框只能输入数字
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
+                break
+            except:
+                time.sleep(1)
         while True:
             try:
                 time.sleep(1)
@@ -141,12 +158,10 @@ def add_item():
                 break
             except:
                 pass
-        time.sleep(3)
         print("pic number:{}".format(int(o)))
         driver.get(url)  # 跳转到收藏夹
 
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
     sign_in_metamask(password_metamask)
-    driver.get(url)  # 跳转到收藏夹
     add_item()
