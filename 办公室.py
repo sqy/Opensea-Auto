@@ -159,6 +159,7 @@ def add_item():
             except:
                 pass
         print("pic number:{}".format(int(o)))
+        os.remove(i)
         driver.get(url)  # 跳转到收藏夹
 
 if __name__ == "__main__":
