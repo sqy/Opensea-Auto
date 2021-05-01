@@ -1,6 +1,4 @@
 from selenium import webdriver  # 引入selenium模块
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver import ChromeOptions
 from PIL import Image
 import xlrd   # 引入Excel读取模块
 from xlutils.copy import copy        #导入copy模块
@@ -10,28 +8,10 @@ import os
 # 启用带插件的浏览器
 plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
-# 实现无可视化界面操作
-chrome_options = Options()
-chrome_options.add_argument('--headless') #浏览器不提供可视化页面. linux下如果系统不支持可视化不加这条会启动失败
-chrome_options.add_argument('--disable-gpu') #谷歌文档提到需要加上这个属性来规避bug
-chrome_options.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
-#针对UA请求头的操作，防止因为没有添加请求头导致的访问被栏截了
-chrome_options.add_argument('User-Agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) >AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 Edg/87.0.664.57')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--hide-scrollbars') #隐藏滚动条, 应对一些特殊页面
-chrome_options.add_argument('blink-settings=imagesEnabled=false') #不加载图片, 提升速度
-#实现规避操作
-option = ChromeOptions()
-option.add_experimental_option('excludeSwitches', ['enable-automation'])
-driver = webdriver.Chrome(chrome_options=chrome_options, options=option)  # 更改Chrome默认选项
-script = '''
-           Object.defineProperty(navigator, 'webdriver', {
-               get: () => undefined
-           })
-           '''
-driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": script})
-
-
+option = webdriver.ChromeOptions()
+option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
+option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
+driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
 driver.implicitly_wait(9999)  # 设置等待9999秒钟
 driver.get(url)  # 设置打开网页
 
@@ -52,15 +32,6 @@ def sign_in_metamask(password_metamask):
             break
         except:
             pass
-# 创建收藏夹（未完成）
-def create_coll(pic_name,pic_desc):
-    driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[1]/div/div[1]/div').click()
-    driver.find_element_by_xpath('//*[@id="image"]').send_keys(get_files(r"cover")[0])
-    driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[5]/div/div/div/form/div[2]/div/div[1]/input').send_keys(pic_name)
-    # 加名字重复情况处理
-    driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[5]/div/div/div/form/div[3]/textarea').send_keys(pic_desc)
-    driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[5]/div/div/div/form/div[4]/div').click()
-    # 创建后还有一步操作
 # 给根目录文件夹内的全部文件拼装绝对路径
 def get_files(pics_path):
     listdir = os.listdir(pics_path)  # 定位文件夹位置
@@ -69,17 +40,7 @@ def get_files(pics_path):
     for file in listdir:
         allfile.append(filepath + '\\' + pics_path + '\\' + file)  # 拼装地址
     return allfile
-# 定义浮点转字符函数
-def float_to_str(float_value):
-    try:
-        float_value = int(float_value)    #尝试转换为整数
-    except ValueError as e:    #文本或文本含数字情况赋值失败
-        return float_value     #即无需转换，直接返回
-    else:
-        if (float_value == int(float_value)):  #如果值为整数
-            return str(int(float_value))       #值转换为整数后转换为字符
-        else :                                 #如果值为浮点数
-            return str(float_value)            #值转换为字符
+# 获取图片信息
 def get_pt():
     # 提取excel有多少行，并做成数组
     data = xlrd.open_workbook('file.xls', formatting_info=True)  # 打开xls文件,不修改原有样式
@@ -108,9 +69,10 @@ def get_pt():
         ws.write(i,2,j)  # 改变（0,0）的值
     wb.save('file_do.xls')   # 保存文件
 # 创建NFT
-def add_item():
+def add_item(coll_num):
     get_pt()
-    coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div[2]/a/div/a/div'
+    coll_num += 1
+    coll = '//*[@id="__next"]/div[1]/div/div/main/div/div/section[2]/div/div/div[1]/div['+str(coll_num)+']/a/div/a/div'
     pics = get_files(r"pic")  # 完成第一个数组（图片）
     datafile_path = r'file_do.xls'  # 表格位置
     data = xlrd.open_workbook(datafile_path)  # 获取数据
@@ -123,18 +85,26 @@ def add_item():
     prop_name = []
     for i in range(ncols):
         if i == 0:
-            file_num = table.col_values(i)
+            file_num = table.col_values(i)  # 序号
         if i == 1:
-            names = table.col_values(i)
+            names = table.col_values(i)  # NFT命名
         if i == 2:
-            descs = table.col_values(i)
+            descs = table.col_values(i)  # NFT描述
         if i == 3:
-            prop_type = table.col_values(i)
+            prop_type = table.col_values(i)  # NFT中prop项分类
         if i == 4:
-            prop_name = table.col_values(i)
-    for i,j,k,l,n,m,o in zip(pics,names,descs,prop_type,prop_name,table.col_values(5),file_num):
+            prop_name = table.col_values(i)  # NFT中prop项命名
+    for i,j,k,l,n,m,o in zip(pics,names,descs,prop_type,prop_name,table.col_values(5),file_num):  # 图片地址、NFT命名、NFT描述、prop分类、prop命名、上架价格、NFT序号
         driver.find_element_by_xpath(coll).click()
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div').click()  # 点击"Add New Item"
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div')  # 定位元素是否存在
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div/main/div/div/section[2]/div[2]/div[3]/section/a/div').click()  # 点击"Add New Item"
+                break
+            except:
+                driver.get(url)  # 跳转到收藏夹
+                time.sleep(1)
+                driver.find_element_by_xpath(coll).click()
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[1]/div/div/div/input').send_keys(i)  # 上传图片
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[2]/div/div[1]/input').send_keys(j)  # 图片名称
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[4]/textarea').send_keys(k)  # 描述
@@ -143,15 +113,39 @@ def add_item():
                 driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[5]/div/div[2]/div/div').click()  # 增加Properties
                 break
             except:
-                driver.execute_script("window.scrollTo(0,200);")
+                driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
         driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
-        driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[2]/div[1]/div/div/div[2]/div/div[2]/div/div').click()  # 点击Save_prop
+                break
+            except:
+                time.sleep(1)
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div').click()  # sell
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[2]/span')  # Missing collection
+                driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
+            except:
+                break
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div')
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div[1]/div[2]/a[2]/div').click()  # sell
+                break
+            except:
+                driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[10]/div[1]/div').click()  # 创建
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div[1]/a/div').click()  # sell
         driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input').send_keys(str(m))  # 输入价格 #输入框只能输入数字
-        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[3]/div/div[2]/div/div[3]/div').click()  # 点击post your listing
+                break
+            except:
+                time.sleep(1)
         while True:
             try:
                 time.sleep(1)
@@ -161,11 +155,11 @@ def add_item():
                 break
             except:
                 pass
-        time.sleep(3)
-        print("pic number:{}".format(o))
-        driver.get(url)  # 回到收藏夹首页
+        print("pic number:{}".format(int(o)))
+        os.remove(i)
+        driver.get(url)  # 跳转到收藏夹
 
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
     sign_in_metamask(password_metamask)
-    add_item()
+    add_item(1)
