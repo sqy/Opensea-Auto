@@ -148,15 +148,20 @@ def add_item(coll_num):
                 time.sleep(1)
         while True:
             try:
-                time.sleep(1)
                 change_window(1)
                 driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
                 change_window(0)
                 break
             except:
-                pass
-        print("pic number:{}".format(int(o)))
-        os.remove(i)
+                time.sleep(1)
+        print("pic number:{}".format(int(o)))  # 输出图片序号
+        os.remove(i)  # 删除已上传图片
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div[1]/div[2]')  # 确认出售后页面是否跳转
+                break
+            except:
+                time.sleep(1)
         driver.get(url)  # 跳转到收藏夹
 
 if __name__ == "__main__":
