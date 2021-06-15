@@ -68,6 +68,8 @@ def get_pt():
     a = get_files('pic')
     desc_mix = []
     story = str(table3.col_values(2)[1])  # 故事位置
+    global lockcontent
+    lockcontent = str(table3.col_values(3)[1])  # 付费内容
     for i,j in zip(a,desc_part):
         desc_mix.append(str(j) + ' ' + str(Image.open(i).size[0]) + '  x  ' + str(Image.open(i).size[1]) + '  px  \n\n' + story)
     # 拼装描述内容
@@ -179,6 +181,13 @@ def add_item(coll_num, k_path, additem_path, opensea_path, homecreate_path, inpu
                 print('propsend出错')
                 ActionChains(driver).move_by_offset(1400, 100).click().perform()
                 driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
+        while True:
+            try:
+                driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[8]/div/div[2]').click()  # Unlockable Content
+                break
+            except:
+                driver.execute_script("window.scrollTo(0,400);")  # 拖滚动条下移，防止界面找不到元素
+        driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[8]/div[2]/textarea').send_keys(lockcontent)
         driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(create_path).click()  # 点Create
         print('完成Create点击')
@@ -261,10 +270,11 @@ if __name__ == "__main__":
     proptype_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
     propname_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
     saveprop_path = '/html/body/div[3]/div/div/div/footer/button'
+    create_path = ''
     create_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/form/div[12]/div[1]/span/button'
     visit_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/section/div[2]/div/div/div[2]/a[1]'
     sellbutton_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/div[1]/div/a[2]'
     price_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/div[2]/div/div[2]/div/div[3]/button'
     filcheck_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/div[2]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span[2]/button/i'
-    add_item(1, k_path, additem_path, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, create_path, visit_path, sellbutton_path, price_path, plist_path, filcheck_path)
+    add_item(4, k_path, additem_path, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, create_path, visit_path, sellbutton_path, price_path, plist_path, filcheck_path)

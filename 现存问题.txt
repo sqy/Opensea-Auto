@@ -1,12 +1,12 @@
-测试中：
-1.打开收藏夹页面未跳转正常页面，停止操作  50测通过
-2.prop键存在未正常点击，停止操作  50测通过
-3.postlist存在停止操作  50测通过
+修改：
+1.新增操作报时；
+2.新增Sell键卡顿后逻辑操作；
+3.新增prop卡顿后逻辑操作；
+4.postlist上架逻辑操作大改；
+5.增加unlockable content操作版本，同步修改file.xls[cover]。
 
 未解决
 1.无头浏览器无法应用
+2.死活都是默认收藏夹
+3.propsend地址变动
 
-新增
-1.出售后跳入默认收藏夹   #//*[@id="__next"]/div[1]/div/div/div/div/main/div/div/div[2]/div[2]/div[1]/div/div[2]/div
-2.需增加完成后发送消息至手机
-3.疑似出现coll位置不操作
