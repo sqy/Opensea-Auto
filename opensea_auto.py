@@ -226,6 +226,15 @@ def add_item(coll_num, k_path, additem_path, opensea_path, homecreate_path, inpu
                     driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
                     change_window(0)
                     print("完成签名")
+                    while True:
+                        try:
+                            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
+                            break
+                        except:
+                            try:
+                                driver.find_element_by_xpath('/html/body/div[3]/div/div/div/header/h1')
+                            except:
+                                driver.refresh()
                     break
                 except:
                     try:
@@ -235,8 +244,7 @@ def add_item(coll_num, k_path, additem_path, opensea_path, homecreate_path, inpu
                         break
                     time.sleep(1)
             try:
-                driver.find_element_by_xpath('/html/body/div[3]/div/div/div/header/h1')
-                WebDriverWait(driver, 300, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
+                driver.find_element_by_xpath(filcheck_path)
                 break
             except:
                 pass
