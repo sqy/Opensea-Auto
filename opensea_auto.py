@@ -132,6 +132,53 @@ def check_coll():
         except:
             driver.get(url)
     print('检测完成')
+# 404收藏夹判定
+def check_coll404():
+    while True:
+        print('检测收藏夹是否正确', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+        try:
+            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, coll)))  # 框
+            try:
+                driver.find_element_by_link_text("Suqingyan")
+                print('找到用户收藏夹')
+                driver.find_element_by_xpath(coll).click()  # 点击指定收藏夹
+                print('完成点击')
+                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, view_path)))
+                driver.find_element_by_xpath(view_path).click()
+                try:
+                    WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sortby_path)))  # 第一个框
+                    break
+                except:
+                    driver.get(url)
+            except:
+                #driver.find_element_by_link_text("Pixel V2")
+                print('非用户收藏夹')
+                driver.find_element_by_xpath( opensea_path).click()  # 点击Opeasea
+                print('跳转首页')
+                try:
+                    WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, homecreate_path)))
+                    driver.find_element_by_xpath(homecreate_path).click()  # 点击首页Create
+                    print('跳转收藏夹', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+                except:
+                    driver.get(url)
+                    print('再次跳转首页')
+        except:
+            driver.get(url)
+    print('检测完成')
+# 重新选择最新Item
+def item_again():
+    try:
+        driver.get(url)
+        check_coll404()
+        driver.find_element_by_xpath(sortby_path).click()  # Sort by
+        driver.find_element_by_xpath(recentcreate_path).click()  # Recently Created
+        time.sleep(3)
+        driver.refresh()
+        WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, firstkuang_path)))
+        driver.find_element_by_xpath(firstkuang_path).click()
+    except:
+        pass
+# Additem键判定
 def check_add():
     while True:
         try:
@@ -140,11 +187,45 @@ def check_add():
             break
         except:
             try:
-                change_window(1)
-                driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-                change_window(0)
+                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path))) # 传图
+                break
             except:
-                driver.refresh()
+                try:
+                    change_window(1)
+                    driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                    change_window(0)
+                except:
+                    driver.refresh()
+# 填item信息
+def fill_info(i, j, k, l, n):
+    driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
+    driver.find_element_by_xpath(names_path).send_keys(j)  # 图片名称
+    driver.find_element_by_xpath(descs_path).send_keys(k)  # 描述
+    while True:
+        try:
+            driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
+            break
+        except:
+            driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
+    while True:
+        try:
+            WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, proptype_path)))
+            driver.find_element_by_xpath(proptype_path).send_keys(l)  # 输入Prop_type
+            driver.find_element_by_xpath(propname_path).send_keys(n)  # 增加Prop_name
+            driver.find_element_by_xpath(saveprop_path).click()  # 点击Save_prop
+            break
+        except:
+            pass
+        ActionChains(driver).move_by_offset(1400, 100).click().perform()
+        driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
+    while True:
+        try:
+            driver.find_element_by_xpath(lock_path).click()  # Unlockable Content
+            break
+        except:
+            driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
+    driver.find_element_by_xpath(lockcontent_path).send_keys(lockcontent)
+# 上架判定
 def postlist():
     while True:
         try:
@@ -205,36 +286,11 @@ def add_item(coll_num):
     for i, j, k, l, n, m, o in zip(pics, names, descs, prop_type, prop_name, table.col_values(5), file_num):  # 图片地址、NFT命名、NFT描述、prop分类、prop命名、上架价格、NFT序号
         check_coll()
         check_add()
-        driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
-        driver.find_element_by_xpath(names_path).send_keys(j)  # 图片名称
-        driver.find_element_by_xpath(descs_path).send_keys(k)  # 描述
-        while True:
-            try:
-                driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
-                break
-            except:
-                driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
-        while True:
-            try:
-                WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, proptype_path)))
-                driver.find_element_by_xpath(proptype_path).send_keys(l)  # 输入Prop_type
-                driver.find_element_by_xpath(propname_path).send_keys(n)  # 增加Prop_name
-                driver.find_element_by_xpath(saveprop_path).click()  # 点击Save_prop
-                break
-            except:
-                pass
-            ActionChains(driver).move_by_offset(1400, 100).click().perform()
-            driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
-        while True:
-            try:
-                driver.find_element_by_xpath(lock_path).click()  # Unlockable Content
-                break
-            except:
-                driver.execute_script("window.scrollTo(0,400);")  # 拖滚动条下移，防止界面找不到元素
-        driver.find_element_by_xpath(lockcontent_path).send_keys(lockcontent)
+        fill_info(i, j, k, l, n)
         driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(create_path).click()  # 点Create
         print('完成Create点击')
+        create_times = 0
         while True:
             print('检测创建是否成功')
             try:
@@ -245,8 +301,23 @@ def add_item(coll_num):
                 print('再次点Create')
                 try:
                     driver.find_element_by_xpath(create_path).click()  # 点Create
+                    create_times = create_times + 1
+                    try:
+                        change_window(1)
+                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        change_window(0)
+                    except:
+                        pass
                 except:
                     pass
+                if create_times == 10:
+                    create_times = 0
+                    driver.refresh()
+                    WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                    fill_info(i, j, k, l, n)
+                    driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
+                    driver.find_element_by_xpath(create_path).click()  # 点Create
+                    print('完成刷新后Create点击')
         print('0')
         driver.find_element_by_xpath(visit_path).click()  # Visit
         print('1')
@@ -269,63 +340,21 @@ def add_item(coll_num):
                 except:
                     if driver.current_url == "https://opensea.io/404":
                         print('出现404错误')
-                        try:
-                            driver.get(url)
-                            check_coll()
-                            while True:
-                                try:
-                                    driver.execute_script("window.scrollTo(0,200);")
-                                    driver.find_element_by_xpath(sortby_path).click()  # Sort by
-                                    break
-                                except:
-                                    pass
-                            driver.find_element_by_xpath(recentcreate_path).click()  # Recently Created
-                            time.sleep(10)
-                            driver.refresh()
-                            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located(
-                                (By.XPATH, firstkuang_path)))
-                            while True:
-                                try:
-                                    driver.find_element_by_xpath(firstkuang_path).click()
-                                    break
-                                except:
-                                    driver.execute_script("window.scrollTo(0,200);")
-                        except:
-                            pass
+                        item_again()
                     else:
                         try:
                             driver.find_element_by_xpath(inputpic_path)
-                            try:
-                                driver.get(url)
-                                check_coll()
-                                while True:
-                                    try:
-                                        driver.execute_script("window.scrollTo(0,200);")
-                                        driver.find_element_by_xpath(sortby_path).click()  # Sort by
-                                        break
-                                    except:
-                                        pass
-                                driver.find_element_by_xpath(recentcreate_path).click()  # Recently Created
-                                time.sleep(10)
-                                driver.refresh()
-                                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located(
-                                    (By.XPATH, firstkuang_path)))
-                                while True:
-                                    try:
-                                        driver.find_element_by_xpath(firstkuang_path).click()
-                                        break
-                                    except:
-                                        driver.execute_script("window.scrollTo(0,200);")
-                            except:
-                                pass
+                            item_again()
                         except:
                             try:
                                 driver.find_element_by_xpath(additem_path)
-                                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, firstkuang_path)))
-                                driver.execute_script("window.scrollTo(0,400);")
-                                driver.find_element_by_xpath(firstkuang_path).click()
+                                item_again()
                             except:
-                                driver.refresh()
+                                try:
+                                    driver.find_element_by_xpath(filcheck_path)
+                                    item_again()
+                                except:
+                                    driver.refresh()
 
         driver.find_element_by_xpath(price_path).send_keys(str(m))  # 输入价格 #输入框只能输入数字
         print('输入价格')
@@ -340,29 +369,31 @@ def add_item(coll_num):
 if __name__ == "__main__":
     password_metamask = r"elysion0922"
     sign_in_metamask(password_metamask)
-    global manage_path, additem_path, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, create_path, visit_path,\
-        sortby_path, recentcreate_path, firstkuang_path, sellbutton_path, price_path, plist_path, listitem_path, filcheck_path
+    global manage_path, additem_path, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, \
+        create_path, view_path, visit_path, sortby_path, recentcreate_path, firstkuang_path, sellbutton_path, price_path, plist_path, listitem_path, filcheck_path
     manage_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[1]/div[2]/div[2]/div[2]/div/a/div/div/i'
     additem_path = '//*[@id="__next"]/div[1]/div/div/div/div[3]/main/div/div/section/div[2]/div[3]/section/div/a'
     opensea_path = '//*[@id="__next"]/div[1]/div/div/div[1]/nav/div[1]/a'
-    homecreate_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[1]/div[2]/div[1]/div[2]/a'
+    homecreate_path = '//*[@id="__next"]/div[2]/div/div/div[3]/main/div/div/div[1]/div[2]/div[1]/div[2]/a'
     inputpic_path = '//*[@id="media"]'
     names_path =  '//*[@id="name"]'
     descs_path = '//*[@id="description"]'
-    addprop_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/div[5]/div/div[2]/button'
-    proptype_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
-    propname_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
-    saveprop_path = '/html/body/div[2]/div/div/div/footer/button'
-    lock_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/div[8]/div/div[2]/label'
-    lockcontent_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/div[8]/div[2]/textarea'
-    create_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/div[13]/div[1]/span/button'
+    addprop_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/section[6]/div[1]/div/div[2]/button'
+    proptype_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
+    propname_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
+    saveprop_path = '/html/body/div[3]/div/div/div/footer/button'
+    lock_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/section[6]/div[4]/div/div[2]/label'
+    lockcontent_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/section[6]/div[4]/div[2]/textarea'
+    create_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/div/div[1]/span/button'
     visit_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
-    sortby_path = '//*[@id="__next"]/div[1]/div/div/div/div[3]/main/div/div/section/div[2]/div[3]/div/div/div/div[1]/div[3]/div/section/div'
-    recentcreate_path = '//*[@id="__next"]/div[1]/div/div/div/div[3]/main/div/div/section/div[2]/div[3]/div/div/div/div[1]/div[3]/div/section/ul/li[2]'
-    firstkuang_path = '//*[@id="__next"]/div[1]/div/div/div/div[3]/main/div/div/section/div[2]/div[3]/div/div/div/div[2]/div/div[1]/article/a/div[1]/div[2]/div/div'
+    view_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/section[1]/div[1]/div[2]/span/a/div'
+    sortby_path = '//*[@id="__next"]/div[1]/div/div/div/div/div[3]/main/div/div/div[2]/div[1]/div[2]/div[2]/input'
+    recentcreate_path = '//*[@id="tippy-144"]/div/div/div/ul/li[2]'
+    firstkuang_path = '//*[@id="__next"]/div[1]/div/div/div/div/div[3]/main/div/div/div[2]/div[2]/div/div[1]/article/a/div[1]/div[2]/div/div'
     sellbutton_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[1]/div/a[2]'
     price_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h1'
     filcheck_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[1]/div[2]/section[2]/div[1]/div'
     add_item(1)
+#'//*[@id="reload-button"]'重新加载
