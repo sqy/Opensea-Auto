@@ -171,6 +171,7 @@ def item_again():
         driver.get(url)
         check_coll404()
         driver.find_element_by_xpath(sortby_path).click()  # Sort by
+        time.sleep(1)
         driver.find_element_by_xpath(recentcreate_path).click()  # Recently Created
         time.sleep(3)
         driver.refresh()
@@ -338,23 +339,10 @@ def add_item(coll_num):
                     print('7')
                     break
                 except:
-                    if driver.current_url == "https://opensea.io/404":
-                        print('出现404错误')
+                    try:
                         item_again()
-                    else:
-                        try:
-                            driver.find_element_by_xpath(inputpic_path)
-                            item_again()
-                        except:
-                            try:
-                                driver.find_element_by_xpath(additem_path)
-                                item_again()
-                            except:
-                                try:
-                                    driver.find_element_by_xpath(filcheck_path)
-                                    item_again()
-                                except:
-                                    driver.refresh()
+                    except:
+                        driver.refresh()
 
         driver.find_element_by_xpath(price_path).send_keys(str(m))  # 输入价格 #输入框只能输入数字
         print('输入价格')
@@ -388,7 +376,7 @@ if __name__ == "__main__":
     visit_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
     view_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/section[1]/div[1]/div[2]/span/a/div'
     sortby_path = '//*[@id="__next"]/div[1]/div/div/div/div/div[3]/main/div/div/div[2]/div[1]/div[2]/div[2]/input'
-    recentcreate_path = '//*[@id="tippy-144"]/div/div/div/ul/li[2]'
+    recentcreate_path = "//*[contains(@id,'tippy-')]/div/div/div/ul/li[2]/button"
     firstkuang_path = '//*[@id="__next"]/div[1]/div/div/div/div/div[3]/main/div/div/div[2]/div[2]/div/div[1]/article/a/div[1]/div[2]/div/div'
     sellbutton_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[1]/div/a[2]'
     price_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
