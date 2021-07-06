@@ -105,18 +105,21 @@ def check_coll():
                 print('找到用户收藏夹')
                 driver.find_element_by_xpath(coll).click()  # 点击指定收藏夹
                 print('完成点击')
-                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, manage_path)))
-                driver.find_element_by_xpath(manage_path).click()
                 try:
-                    WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, additem_path)))  # "Add New Item"
-                    break
-                except:
-                    driver.refresh()
+                    WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, manage_path)))
+                    driver.find_element_by_xpath(manage_path).click()
                     try:
                         WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, additem_path)))  # "Add New Item"
                         break
                     except:
-                        driver.get(url)
+                        driver.refresh()
+                        try:
+                            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, additem_path)))  # "Add New Item"
+                            break
+                        except:
+                            driver.get(url)
+                except:
+                    driver.refresh()  # 防收藏夹卡死
             except:
                 #driver.find_element_by_link_text("Pixel V2")
                 print('非用户收藏夹')
@@ -143,13 +146,16 @@ def check_coll404():
                 print('找到用户收藏夹')
                 driver.find_element_by_xpath(coll).click()  # 点击指定收藏夹
                 print('完成点击')
-                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, view_path)))
-                driver.find_element_by_xpath(view_path).click()
                 try:
-                    WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sortby_path)))  # 第一个框
-                    break
+                    WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, view_path)))
+                    driver.find_element_by_xpath(view_path).click()
+                    try:
+                        WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sortby_path)))  # 第一个框
+                        break
+                    except:
+                        driver.get(url)
                 except:
-                    driver.get(url)
+                    driver.refresh()  # 防收藏夹卡死
             except:
                 #driver.find_element_by_link_text("Pixel V2")
                 print('非用户收藏夹')
