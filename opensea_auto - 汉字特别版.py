@@ -10,11 +10,12 @@ import time
 import os
 
 # 启用带插件的浏览器
-plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
-#plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
+#plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
+plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
+option.add_argument('--hide-scrollbars')  # 隐藏滚动条, 应对一些特殊页面
 option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
 option.add_argument('--start-maximized')         # 全屏窗口
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
@@ -66,7 +67,10 @@ def get_pt():
     ncols = table2.ncols  # 定义列数
     table3 = data.sheet_by_name(r'cover')  # 表格内工作表
     desc_part = []
+    number = []
     for i in range(ncols):
+        if i == 0:
+            number = table2.col_values(i)
         if i == 2:
             desc_part = table2.col_values(i)
     # 获取图片像素部分
@@ -76,8 +80,8 @@ def get_pt():
     story = str(table3.col_values(2)[1])  # 故事位置
     global lockcontent
     lockcontent = str(table3.col_values(3)[1])  # 付费内容
-    for i,j in zip(a,desc_part):
-        desc_mix.append(str(j) + ' ' + str(Image.open(i).size[0]) + '  x  ' + str(Image.open(i).size[1]) + '  px  \n\n' + story)
+    for i,j,k in zip(a,desc_part,number):
+        desc_mix.append(str(j) + chr(int(int(k)+19967)) + ' ' + '//' + ' ' + str(Image.open(i).size[0]) + '  x  ' + str(Image.open(i).size[1]) + '  px  \n\n' + story)
     # 拼装描述内容
     for i,j in zip(num_nrows,desc_mix):
         ws.write(i,2,j)  # 改变（0,0）的值
@@ -225,13 +229,13 @@ def fill_info(i, j, k, l, n):
             pass
         ActionChains(driver).move_by_offset(1400, 100).click().perform()
         driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
-    while True:
-        try:
-            driver.find_element_by_xpath(lock_path).click()  # Unlockable Content
-            break
-        except:
-            driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
-    driver.find_element_by_xpath(lockcontent_path).send_keys(lockcontent)
+    #while True:
+        #try:
+            #driver.find_element_by_xpath(lock_path).click()  # Unlockable Content
+            #break
+        #except:
+            #driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
+    #driver.find_element_by_xpath(lockcontent_path).send_keys(lockcontent)
 # 上架判定
 def postlist():
     while True:

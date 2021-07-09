@@ -1,12 +1,7 @@
-修改：
-1.新增操作报时；
-2.新增Sell键卡顿后逻辑操作；
-3.新增prop卡顿后逻辑操作；
-4.postlist上架逻辑操作大改；
-5.增加unlockable content操作版本，同步修改file.xls[cover]。
-
 未解决
 1.无头浏览器无法应用
-2.死活都是默认收藏夹
-3.propsend地址变动
+2.缺少断线重连逻辑
+3.Additem和Create以外操作无签名逻辑
 
+特殊情况
+1.Create成功后，找不到item
