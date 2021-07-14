@@ -9,6 +9,7 @@ plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
 #url = r"https://www.baidu.com/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
+option.add_argument('disable-infobars')  # 隐藏"Chrome正在受到自动软件的控制"
 option.add_argument('--no-sandbox') #解决DevToolsActivePort文件不存在的报错
 option.add_argument('--disable-gpu') #谷歌文档提到需要加上这个属性来规避bug
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件

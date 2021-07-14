@@ -121,7 +121,6 @@ def check_coll():
                 except:
                     driver.refresh()  # 防收藏夹卡死
             except:
-                #driver.find_element_by_link_text("Pixel V2")
                 print('非用户收藏夹')
                 driver.find_element_by_xpath( opensea_path).click()  # 点击Opeasea
                 print('跳转首页')
@@ -157,7 +156,6 @@ def check_coll404():
                 except:
                     driver.refresh()  # 防收藏夹卡死
             except:
-                #driver.find_element_by_link_text("Pixel V2")
                 print('非用户收藏夹')
                 driver.find_element_by_xpath( opensea_path).click()  # 点击Opeasea
                 print('跳转首页')
@@ -222,7 +220,13 @@ def fill_info(i, j, k, l, n):
             driver.find_element_by_xpath(saveprop_path).click()  # 点击Save_prop
             break
         except:
-            pass
+            try:
+                WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input')))
+                driver.find_element_by_xpath('/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
+                driver.find_element_by_xpath('/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
+                driver.find_element_by_xpath('/html/body/div[2]/div/div/div/footer/button').click()  # 点击Save_prop
+            except:
+                pass
         ActionChains(driver).move_by_offset(1400, 100).click().perform()
         driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
     while True:
@@ -316,11 +320,21 @@ def add_item(coll_num):
                     except:
                         pass
                 except:
-                    pass
+                    try:
+                        change_window(1)
+                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        change_window(0)
+                    except:
+                        pass
                 if create_times == 10:
                     create_times = 0
                     driver.refresh()
-                    WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                    while True:
+                        try:
+                            WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                            break
+                        except:
+                            driver.refresh()
                     fill_info(i, j, k, l, n)
                     driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
                     driver.find_element_by_xpath(create_path).click()  # 点Create
@@ -388,6 +402,6 @@ if __name__ == "__main__":
     price_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
-    filcheck_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[1]/div[2]/section[2]/div[1]/div'
-    add_item(1)
+    filcheck_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button'
+    add_item(3)
 #'//*[@id="reload-button"]'重新加载
