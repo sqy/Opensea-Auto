@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 from PIL import Image
 import xlrd   # 引入Excel读取模块
 from xlutils.copy import copy        #导入copy模块
@@ -15,11 +16,9 @@ plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
-option.add_argument('--disable-gpu')  # 谷歌文档提到需要加上这个属性来规避bug
 option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
 option.add_argument('--start-maximized')         # 全屏窗口
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
-#driver.implicitly_wait(30)  # 设置等待9999秒钟
 driver.get(url)  # 设置打开网页
 
 # 切换页面
@@ -239,13 +238,16 @@ def fill_info(i, j, k, l, n):
             driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
     driver.find_element_by_xpath(lockcontent_path).send_keys(lockcontent)
 # 上架判定
-def postlist():
+def postlist(m):
     while True:
         try:
             driver.find_element_by_xpath(filcheck_path)
             break
         except:
             try:
+                driver.find_element_by_xpath(price_path).send_keys(Keys.CONTROL + 'a')  # 全选
+                driver.find_element_by_xpath(price_path).send_keys(Keys.DELETE)  # 删除，清空
+                driver.find_element_by_xpath(price_path).send_keys(str(m))
                 driver.find_element_by_xpath(plist_path).click()  # 点击post your listing\
                 WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH,listitem_path)))
                 postlist_sign(180)
@@ -373,7 +375,7 @@ def add_item(coll_num):
 
         driver.find_element_by_xpath(price_path).send_keys(str(m))  # 输入价格 #输入框只能输入数字
         print('输入价格')
-        postlist()
+        postlist(m)
 
         a += 1
         print("图片序号:{}，本次上传第{}张".format(int(o), int(a)), time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))  # 输出图片序号
