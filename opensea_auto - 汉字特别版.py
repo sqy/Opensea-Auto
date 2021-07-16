@@ -15,7 +15,6 @@ plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
-option.add_argument('--hide-scrollbars')  # 隐藏滚动条, 应对一些特殊页面
 option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
 option.add_argument('--start-maximized')         # 全屏窗口
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
@@ -30,8 +29,11 @@ def change_window(number):
 def sign_in_metamask(password_metamask):
     while True:
         try:
-            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div/div[1]/div[2]/button')))
-            driver.find_element_by_xpath('//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div/div[1]/div[2]/button').click()  # 点击登录键
+            print('等待登录')
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button')))
+            print('找到登录键')
+            driver.find_element_by_xpath('//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button').click()  # 点击登录键
+            print('点击登录键')
             break
         except:
             driver.refresh()
@@ -217,7 +219,7 @@ def fill_info(i, j, k, l, n):
             driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
             break
         except:
-            driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
+            driver.execute_script("window.scrollTo(0,400);")  # 拖滚动条下移，防止界面找不到元素
     while True:
         try:
             WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, proptype_path)))
@@ -231,9 +233,17 @@ def fill_info(i, j, k, l, n):
                 driver.find_element_by_xpath('/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
                 driver.find_element_by_xpath('/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
                 driver.find_element_by_xpath('/html/body/div[2]/div/div/div/footer/button').click()  # 点击Save_prop
+                break
             except:
-                pass
-        ActionChains(driver).move_by_offset(1400, 100).click().perform()
+                try:
+                    WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[4]/div/div/div/section/table/tbody/tr/td[1]/div/div/input')))
+                    driver.find_element_by_xpath('/html/body/div[4]/div/div/div/section/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
+                    driver.find_element_by_xpath('/html/body/div[4]/div/div/div/section/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
+                    driver.find_element_by_xpath('/html/body/div[4]/div/div/div/footer/button').click()  # 点击Save_prop
+                    break
+                except:
+                    pass
+        ActionChains(driver).move_by_offset(800, 100).click().perform()
         driver.find_element_by_xpath(addprop_path).click()  # 增加Properties
     #while True:
         #try:
@@ -278,7 +288,7 @@ def add_item(coll_num):
     a = 0
     get_pt()
     global coll
-    coll = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div/div/div[1]/div[' + str(coll_num) + ']/a/div[2]'
+    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(coll_num) + ']/a/div[2]'
     pics = get_files(r"pic")  # 完成第一个数组（图片）
     datafile_path = r'file_do.xls'  # 表格位置
     data = xlrd.open_workbook(datafile_path)  # 获取数据
@@ -360,15 +370,20 @@ def add_item(coll_num):
                 break
             except:
                 try:
-                    print('6')
-                    driver.find_element_by_xpath(price_path)
-                    print('7')
-                    break
+                    driver.find_element_by_xpath('//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a')  # 第一个Sell
+                    print('5-1')
+                    driver.refresh()
                 except:
                     try:
-                        item_again()
+                        print('6')
+                        driver.find_element_by_xpath(price_path)
+                        print('7')
+                        break
                     except:
-                        driver.refresh()
+                        try:
+                            item_again()
+                        except:
+                            driver.refresh()
 
         driver.find_element_by_xpath(price_path).send_keys(str(m))  # 输入价格 #输入框只能输入数字
         print('输入价格')
@@ -385,32 +400,29 @@ if __name__ == "__main__":
     sign_in_metamask(password_metamask)
     global manage_path, additem_path, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, \
         create_path, view_path, visit_path, sortby_path, recentcreate_path, firstkuang_path, sellbutton_path, price_path, plist_path, listitem_path, filcheck_path
-    manage_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[1]/div[2]/div[2]/div[2]/div/a/div/div/i'
-    additem_path = '//*[@id="__next"]/div[1]/div/div/div/div[3]/main/div/div/section/div[2]/div[3]/section/div/a'
-    opensea_path = '//*[@id="__next"]/div[1]/div/div/div[1]/nav/div[1]/a'
-    homecreate_path = '//*[@id="__next"]/div[2]/div/div/div[3]/main/div/div/div[1]/div[2]/div[1]/div[2]/a'
+    manage_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div[2]/div[2]/div[2]/div/a/div/div/i'
+    additem_path = '//*[@id="__next"]/div[1]/div/main/div/div/section/div[2]/div[3]/section/div/a'
+    opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
+    homecreate_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div[2]/div[1]/div[1]/a'
     inputpic_path = '//*[@id="media"]'
-    names_path =  '//*[@id="name"]'
+    names_path = '//*[@id="name"]'
     descs_path = '//*[@id="description"]'
-    addprop_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/section[6]/div[1]/div/div[2]/button'
+    addprop_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/section[6]/div[1]/div/div[2]/button'
     proptype_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
-
     propname_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
-
     saveprop_path = '/html/body/div[3]/div/div/div/footer/button'
-
-    lock_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/section[6]/div[4]/div/div[2]/label'
-    lockcontent_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/section[6]/div[4]/div[2]/textarea'
-    create_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/form/div/div[1]/span/button'
-    visit_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
-    view_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/section[1]/div[1]/div[2]/span/a/p'
-    sortby_path = '//*[@id="__next"]/div[1]/div/div/div/div/div[3]/main/div/div/div[2]/div[1]/div[2]/div[2]/input'
+    lock_path = '//*[@id="unlockable-content-toggle"]'
+    lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/section[6]/div[4]/div[2]/textarea'
+    create_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/div/div[1]/span/button'
+    visit_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
+    view_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/section[1]/div[1]/div[2]/span/a/p'
+    sortby_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/div[2]/div[1]/div[2]/div[2]/input'
     recentcreate_path = "//*[contains(@id,'tippy-')]/div/div/div/ul/li[2]/button"
-    firstkuang_path = '//*[@id="__next"]/div[1]/div/div/div/div/div[3]/main/div/div/div[2]/div[2]/div/div[1]/article/a/div[1]/div[2]/div/div'
-    sellbutton_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[1]/div/a[2]'
-    price_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
-    plist_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
+    firstkuang_path = '//*[@id="__next"]/div[1]/div/div/main/div/div/div[2]/div[2]/div/div[1]/article/a/div[2]'
+    sellbutton_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a[2]'
+    price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
+    plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[2]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
-    filcheck_path = '//*[@id="__next"]/div[1]/div/div/div[3]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button'
+    filcheck_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button/i'
     add_item(1)
 #'//*[@id="reload-button"]'重新加载
