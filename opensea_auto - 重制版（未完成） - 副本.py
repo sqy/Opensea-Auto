@@ -9,7 +9,8 @@ from xlutils.copy import copy  # 导入copy模块
 import time
 import os
 
-# 启用带插件的浏览器
+# 第一部分：浏览器参数
+# 1.启用带插件的浏览器
 #plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
 plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
@@ -20,30 +21,8 @@ option.add_argument('--start-maximized')         # 全屏窗口
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
 driver.get(url)  # 设置打开网页
 
-# 第一部分：登录
-# 切换页面
-def change_window(number):
-    handles = driver.window_handles  # 获取当前页面所有的句柄
-    driver.switch_to.window(handles[number])
-# 登录metamask钱包
-def sign_in_metamask(password_metamask):
-    while True:
-        try:
-            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button)))
-            driver.find_element_by_xpath(sign_in_button).click()  # 点击登录键
-            break
-        except:
-            driver.refresh()
-    while True:
-        try:
-            change_window(1)  # 切换至弹出页面
-            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
-            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
-            change_window(0)  # 切换回主页面
-            break
-        except:
-            time.sleep(1)
-# 给根目录文件夹内的全部文件拼装绝对路径
+# 第二部分：获取数据
+# 1.给根目录文件夹内的全部文件拼装绝对路径
 def get_files(pics_path):
     listdir = os.listdir(pics_path)  # 定位文件夹位置
     filepath = os.getcwd()  # 当前工作目录
@@ -51,7 +30,7 @@ def get_files(pics_path):
     for file in listdir:
         allfile.append(filepath + '\\' + pics_path + '\\' + file)  # 拼装地址
     return allfile
-# 获取图片信息
+# 2.获取图片信息
 def get_pt():
     # 提取excel有多少行，并做成数组
     data = xlrd.open_workbook('file.xls', formatting_info=True)  # 打开xls文件,不修改原有样式
@@ -82,19 +61,15 @@ def get_pt():
     for i,j in zip(num_nrows,desc_mix):
         ws.write(i,2,j)  # 改变（0,0）的值
     wb.save('file_do.xls')   # 保存文件
-# 上架签名
-def postlist_sign(s):
-    times = 0
-    while times < s:
-        times += 1
-        try:
-            change_window(1)
-            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-            change_window(0)
-            break
-        except:
-            time.sleep(1)
-# 收藏夹判定
+
+# 第三部分：基础操作
+# 1.切换页面
+def change_window(number):
+    handles = driver.window_handles  # 获取当前页面所有的句柄
+    driver.switch_to.window(handles[number])
+
+# 第四部分：判定操作
+# 1.收藏夹判定
 def check_coll():
     while True:
         print('检测收藏夹是否正确', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
@@ -134,7 +109,7 @@ def check_coll():
         except:
             driver.get(url)
     print('检测完成')
-# 404收藏夹判定
+# 2.404收藏夹判定
 def check_coll404():
     while True:
         print('检测收藏夹是否正确', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
@@ -169,6 +144,40 @@ def check_coll404():
         except:
             driver.get(url)
     print('检测完成')
+
+# 第五部分：页面操作
+# 1.登录metamask钱包
+def sign_in_metamask(password_metamask):
+    while True:
+        try:
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button)))
+            driver.find_element_by_xpath(sign_in_button).click()  # 点击登录键
+            break
+        except:
+            driver.refresh()
+    while True:
+        try:
+            change_window(1)  # 切换至弹出页面
+            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
+            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
+            change_window(0)  # 切换回主页面
+            break
+        except:
+            time.sleep(1)
+
+# 上架签名
+def postlist_sign(s):
+    times = 0
+    while times < s:
+        times += 1
+        try:
+            change_window(1)
+            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+            change_window(0)
+            break
+        except:
+            time.sleep(1)
+
 # 重新选择最新Item
 def item_again():
     try:
