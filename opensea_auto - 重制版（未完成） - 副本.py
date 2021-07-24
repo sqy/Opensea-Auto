@@ -12,7 +12,8 @@ import os
 # 第一部分：浏览器参数
 # 1.启用带插件的浏览器
 #plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
-plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
+#plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
+plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
@@ -67,6 +68,32 @@ def get_pt():
 def change_window(number):
     handles = driver.window_handles  # 获取当前页面所有的句柄
     driver.switch_to.window(handles[number])
+# 2.重新选择最新Item
+def item_again():
+    try:
+        driver.get(url)
+        check_coll404()
+        driver.find_element_by_xpath(sortby_path).click()  # Sort by
+        time.sleep(1)
+        driver.find_element_by_xpath(recentcreate_path).click()  # Recently Created
+        time.sleep(3)
+        driver.refresh()
+        WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, firstkuang_path)))
+        driver.find_element_by_xpath(firstkuang_path).click()
+    except:
+        pass
+# 3.上架签名
+def postlist_sign(s):
+    times = 0
+    while times < s:
+        times += 1
+        try:
+            change_window(1)
+            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+            change_window(0)
+            break
+        except:
+            time.sleep(1)
 
 # 第四部分：判定操作
 # 1.收藏夹判定
@@ -144,6 +171,54 @@ def check_coll404():
         except:
             driver.get(url)
     print('检测完成')
+# 3.Additem键判定
+def check_add():
+    while True:
+        try:
+            driver.find_element_by_xpath(additem_path).click()  # 点击"Add New Item"
+            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))  # 传图
+            break
+        except:
+            try:
+                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path))) # 传图
+                break
+            except:
+                try:
+                    change_window(1)
+                    driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                    change_window(0)
+                except:
+                    driver.refresh()
+# 4.上架判定
+def postlist():
+    while True:
+        try:
+            driver.find_element_by_xpath(filcheck_path)
+            break
+        except:
+            try:
+                driver.find_element_by_xpath(plist_path).click()  # 点击post your listing\
+                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH,listitem_path)))
+                postlist_sign(180)
+                while True:
+                    try:
+                        WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
+                        break
+                    except:
+                        try:
+                            driver.find_element_by_xpath(listitem_path)
+                        except:
+                            break
+                try:
+                    driver.find_element_by_xpath(filcheck_path)
+                    break
+                except:
+                    try:
+                        driver.find_element_by_xpath(plist_path)
+                    except:
+                        driver.refresh()
+            except:
+                pass
 
 # 第五部分：页面操作
 # 1.登录metamask钱包
@@ -165,51 +240,10 @@ def sign_in_metamask(password_metamask):
         except:
             time.sleep(1)
 
-# 上架签名
-def postlist_sign(s):
-    times = 0
-    while times < s:
-        times += 1
-        try:
-            change_window(1)
-            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-            change_window(0)
-            break
-        except:
-            time.sleep(1)
 
-# 重新选择最新Item
-def item_again():
-    try:
-        driver.get(url)
-        check_coll404()
-        driver.find_element_by_xpath(sortby_path).click()  # Sort by
-        time.sleep(1)
-        driver.find_element_by_xpath(recentcreate_path).click()  # Recently Created
-        time.sleep(3)
-        driver.refresh()
-        WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, firstkuang_path)))
-        driver.find_element_by_xpath(firstkuang_path).click()
-    except:
-        pass
-# Additem键判定
-def check_add():
-    while True:
-        try:
-            driver.find_element_by_xpath(additem_path).click()  # 点击"Add New Item"
-            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))  # 传图
-            break
-        except:
-            try:
-                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path))) # 传图
-                break
-            except:
-                try:
-                    change_window(1)
-                    driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-                    change_window(0)
-                except:
-                    driver.refresh()
+
+
+
 # 填item信息
 def fill_info(i, j, k, l, n):
     driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
@@ -245,36 +279,7 @@ def fill_info(i, j, k, l, n):
         except:
             driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
     driver.find_element_by_xpath(lockcontent_path).send_keys(lockcontent)
-# 上架判定
-def postlist():
-    while True:
-        try:
-            driver.find_element_by_xpath(filcheck_path)
-            break
-        except:
-            try:
-                driver.find_element_by_xpath(plist_path).click()  # 点击post your listing\
-                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH,listitem_path)))
-                postlist_sign(180)
-                while True:
-                    try:
-                        WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
-                        break
-                    except:
-                        try:
-                            driver.find_element_by_xpath(listitem_path)
-                        except:
-                            break
-                try:
-                    driver.find_element_by_xpath(filcheck_path)
-                    break
-                except:
-                    try:
-                        driver.find_element_by_xpath(plist_path)
-                    except:
-                        driver.refresh()
-            except:
-                pass
+
 
 # 创建NFT
 def add_item(coll_num):
