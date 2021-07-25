@@ -68,7 +68,6 @@ def get_pt():
 def change_window(number):
     handles = driver.window_handles  # 获取当前页面所有的句柄
     driver.switch_to.window(handles[number])
-
 # 3.上架签名
 def postlist_sign(s):
     times = 0
@@ -107,7 +106,6 @@ def check_coll():
         except:
             driver.get(url)
     print('检测完成')
-
 # 4.上架判定
 def postlist():
     while True:
@@ -182,6 +180,7 @@ def fill_info(i, j, k, l, n):
                 driver.find_element_by_xpath('/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input').send_keys(l)  # 输入Prop_type
                 driver.find_element_by_xpath('/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input').send_keys(n)  # 增加Prop_name
                 driver.find_element_by_xpath('/html/body/div[2]/div/div/div/footer/button').click()  # 点击Save_prop
+                break
             except:
                 pass
         ActionChains(driver).move_by_offset(800, 100).click().perform()
@@ -228,6 +227,30 @@ def add_item(coll_num):
         add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
     for i, j, k, l, n, m, o in zip(pics, names, descs, prop_type, prop_name, table.col_values(5), file_num):  # 图片地址、NFT命名、NFT描述、prop分类、prop命名、上架价格、NFT序号
         driver.get(add_item_url)
+        if a == 0:
+            waittimes = 0
+            while True:
+                try:
+                    WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                    try:
+                        change_window(1)
+                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        change_window(0)
+                        break
+                    except:
+                        pass
+                except:
+                    try:
+                        change_window(1)
+                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        change_window(0)
+                        break
+                    except:
+                        pass
+                    waittimes = waittimes + 1
+                    if waittimes > 10:
+                        break
+                    time.sleep(1)
         fill_info(i, j, k, l, n)
         driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(create_path).click()  # 点Create
@@ -319,12 +342,10 @@ def add_item(coll_num):
         a += 1
         print("图片序号:{}，本次上传第{}张".format(int(o), int(a)), time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))  # 输出图片序号
         os.remove(i)  # 删除已上传图片
-        driver.get(url)  # 跳转到收藏夹
-        print('跳转收藏夹')
+        driver.get(add_item_url)  # 跳转additem
+        print('跳转additem')
 
 if __name__ == "__main__":
-    password_metamask = r"elysion0922"
-    sign_in_metamask(password_metamask)
     global sign_in_button, sign_in_unlock, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, \
         create_path, visit_path, sellbutton_path, price_path, plist_path, listitem_path, filcheck_path
     sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
@@ -344,8 +365,10 @@ if __name__ == "__main__":
     visit_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
     sellbutton_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a[2]'
     price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
-    plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
+    plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[2]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
     filcheck_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button/i'
-    add_item(2)
+    password_metamask = r"elysion0922"
+    sign_in_metamask(password_metamask)
+    add_item(3)
 #'//*[@id="reload-button"]'重新加载
