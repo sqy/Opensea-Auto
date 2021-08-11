@@ -114,37 +114,23 @@ def check_coll():
 def postlist(m):
     while True:
         try:
-            driver.find_element_by_xpath(filcheck_path)
+            driver.find_element_by_xpath(viewitem_path)
             break
         except:
             try:
                 driver.find_element_by_xpath(price_path).send_keys(Keys.CONTROL + 'a')  # 全选
                 driver.find_element_by_xpath(price_path).send_keys(Keys.DELETE)  # 删除，清空
                 driver.find_element_by_xpath(price_path).send_keys(str(m))
+                WebDriverWait(driver, 5, 0.5).until(EC.presence_of_element_located((By.XPATH, plist_path)))
                 driver.find_element_by_xpath(plist_path).click()  # 点击post your listing\
                 WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH,listitem_path)))
-                postlist_sign(180)
-                while True:
-                    try:
-                        WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
-                        break
-                    except:
-                        try:
-                            driver.find_element_by_xpath(listitem_path)
-                            try:
-                                postlist_sign(180)
-                            except:
-                                pass
-                        except:
-                            break
+                postlist_sign(60)
                 try:
-                    driver.find_element_by_xpath(filcheck_path)
+                    WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, viewitem_path)))
                     break
                 except:
-                    try:
-                        driver.find_element_by_xpath(plist_path)
-                    except:
-                        driver.refresh()
+                    postlist_sign(3)
+                    driver.refresh()
             except:
                 pass
 
@@ -311,28 +297,17 @@ def add_item(coll_num):
                     driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
                     driver.find_element_by_xpath(create_path).click()  # 点Create
                     print('完成刷新后Create点击')
-        check_sell = 0
-        driver.find_element_by_xpath(visit_path).click()  # Visit
+        visit_url = driver.find_elements_by_xpath(visit_path)
+        for get_url in visit_url:
+            sell_url = str(get_url.get_attribute("href")) + '/sell'
+        driver.get(sell_url)
         while True:
             try:
-                WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))  # sell
-                check_sell = 1
-                sell_url = driver.current_url
-                print('check_sell={}'.format(check_sell))
-                driver.find_element_by_xpath(sellbutton_path).click()  # sell
                 WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, price_path)))  # 输价
                 break
             except:
-                try:
-                    driver.find_element_by_xpath(price_path)
-                    break
-                except:
-                    try:
-                        driver.get(sell_url)
-                    except:
-                        driver.refresh()
+                driver.refresh()
 
-        driver.find_element_by_xpath(price_path).send_keys(str(m))  # 输入价格 #输入框只能输入数字
         print('输入价格')
         postlist(m)
 
@@ -344,13 +319,13 @@ def add_item(coll_num):
 
 if __name__ == "__main__":
     global sign_in_button, sign_in_unlock, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, \
-        create_path, visit_path, sellbutton_path, price_path, plist_path, listitem_path, filcheck_path
+        create_path, visit_path, sellbutton_path, price_path, plist_path, listitem_path, viewitem_path
     sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
     sign_in_unlock = '//*[@id="app-content"]/div/div[3]/div/div/button/span'
     opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
     homecreate_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div[2]/div[1]/div[1]/a'
     inputpic_path = '//*[@id="media"]'
-    names_path =  '//*[@id="name"]'
+    names_path = '//*[@id="name"]'
     descs_path = '//*[@id="description"]'
     addprop_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/section[6]/div[1]/div/div[2]/button'
     proptype_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
@@ -364,7 +339,8 @@ if __name__ == "__main__":
     price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[2]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
-    filcheck_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button/i'
+    viewitem_path = '/html/body/div[2]/div/div/div/footer/a'
+
     global password_metamask, lockcontent_do
     password_metamask = r"elysion0922"
     lockcontent_do = 1
@@ -372,3 +348,4 @@ if __name__ == "__main__":
     sign_in_metamask()
     add_item(3)
 #'//*[@id="reload-button"]'重新加载
+'/html/body/div[2]/div/div/div/footer/a'

@@ -114,6 +114,7 @@ def check_coll():
     print('检测完成')
 # 4.上架判定
 def postlist(m):
+    postlist_times = 0
     while True:
         try:
             driver.find_element_by_xpath(filcheck_path)
@@ -124,31 +125,48 @@ def postlist(m):
                 driver.find_element_by_xpath(price_path).send_keys(Keys.DELETE)  # 删除，清空
                 driver.find_element_by_xpath(price_path).send_keys(str(m))
                 driver.find_element_by_xpath(plist_path).click()  # 点击post your listing\
-                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH,listitem_path)))
-                postlist_sign(180)
-                while True:
-                    try:
-                        WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
-                        break
-                    except:
-                        try:
-                            driver.find_element_by_xpath(listitem_path)
-                            try:
-                                postlist_sign(180)
-                            except:
-                                pass
-                        except:
-                            break
+                WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.XPATH,listitem_path)))
                 try:
-                    driver.find_element_by_xpath(filcheck_path)
-                    break
+                    driver.find_element_by_xpath(viewitem_path)
+                    driver.refresh()
                 except:
+                    postlist_sign(30)
                     try:
-                        driver.find_element_by_xpath(plist_path)
+                        check_plist = 0
+                        WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, viewitem_path)))
+                        driver.find_element_by_xpath(viewitem_path).click()
                     except:
+                        check_plist = 1
                         driver.refresh()
+                    if check_plist == 0:
+                        while True:
+                            try:
+                                WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, filcheck_path)))
+                                break
+                            except:
+                                try:
+                                    driver.find_element_by_xpath(listitem_path)
+                                    try:
+                                        postlist_sign(180)
+                                    except:
+                                        pass
+                                except:
+                                    break
+                        try:
+                            driver.find_element_by_xpath(filcheck_path)
+                            break
+                        except:
+                            try:
+                                driver.find_element_by_xpath(plist_path)
+                            except:
+                                driver.refresh()
+
             except:
-                pass
+                postlist_times = postlist_times + 1
+                time.sleep(1)
+                if postlist_times == 30:
+                    driver.refresh()
+                    postlist_times = 0
 
 # 第五部分：页面操作
 # 1.登录metamask钱包
@@ -248,7 +266,8 @@ def add_item(coll_num):
                     WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
                     try:
                         change_window(1)
-                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        driver.find_element_by_xpath(
+                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
                         change_window(0)
                         break
                     except:
@@ -256,7 +275,8 @@ def add_item(coll_num):
                 except:
                     try:
                         change_window(1)
-                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        driver.find_element_by_xpath(
+                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
                         change_window(0)
                         break
                     except:
@@ -279,8 +299,8 @@ def add_item(coll_num):
         while True:
             print('检测创建是否成功')
             try:
-                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, visit_path)))
-                print('创建成功，Visit键存在', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, created_close_path)))
+                print('创建成功，Close键存在', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
                 break
             except:
                 print('再次点Create')
@@ -289,14 +309,16 @@ def add_item(coll_num):
                     create_times = create_times + 1
                     try:
                         change_window(1)
-                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        driver.find_element_by_xpath(
+                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
                         change_window(0)
                     except:
                         pass
                 except:
                     try:
                         change_window(1)
-                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        driver.find_element_by_xpath(
+                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
                         change_window(0)
                     except:
                         pass
@@ -305,7 +327,8 @@ def add_item(coll_num):
                     driver.refresh()
                     while True:
                         try:
-                            WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                            WebDriverWait(driver, 30, 0.5).until(
+                                EC.presence_of_element_located((By.XPATH, inputpic_path)))
                             break
                         except:
                             driver.refresh()
@@ -313,60 +336,57 @@ def add_item(coll_num):
                     driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
                     driver.find_element_by_xpath(create_path).click()  # 点Create
                     print('完成刷新后Create点击')
-        check_sell = 0
-        driver.find_element_by_xpath(visit_path).click()  # Visit
+        #time.sleep(60)
+        driver.find_element_by_xpath(created_close_path).click()
+        WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))
+        driver.find_element_by_xpath(sellbutton_path).click()
         while True:
             try:
-                WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))  # sell
-                check_sell = 1
-                sell_url = driver.current_url
-                print('check_sell={}'.format(check_sell))
-                driver.find_element_by_xpath(sellbutton_path).click()  # sell
                 WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, price_path)))  # 输价
                 break
             except:
+                driver.refresh()
                 try:
-                    driver.find_element_by_xpath(price_path)
-                    break
+                    driver.find_element_by_xpath(sellbutton_path).click()
                 except:
-                    try:
-                        driver.get(sell_url)
-                    except:
-                        driver.refresh()
+                    pass
 
-        driver.find_element_by_xpath(price_path).send_keys(str(m))  # 输入价格 #输入框只能输入数字
         print('输入价格')
         postlist(m)
 
         a += 1
-        print("图片序号:{}，本次上传第{}张".format(int(o), int(a)), time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))  # 输出图片序号
+        print("图片序号:{}，本次上传第{}张".format(int(o), int(a)),
+              time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))  # 输出图片序号
         os.remove(i)  # 删除已上传图片
         driver.get(add_item_url)  # 跳转additem
         print('跳转additem')
 
 if __name__ == "__main__":
     global sign_in_button, sign_in_unlock, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, \
-        create_path, visit_path, sellbutton_path, price_path, plist_path, listitem_path, filcheck_path
+        create_path, created_close_path, visit_path, sellbutton_path, price_path, plist_path, listitem_path, viewitem_path, filcheck_path
     sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
     sign_in_unlock = '//*[@id="app-content"]/div/div[3]/div/div/button/span'
     opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
     homecreate_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div[2]/div[1]/div[1]/a'
     inputpic_path = '//*[@id="media"]'
-    names_path =  '//*[@id="name"]'
+    names_path = '//*[@id="name"]'
     descs_path = '//*[@id="description"]'
-    addprop_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/section[6]/div[1]/div/div[2]/button'
-    proptype_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
-    propname_path = '/html/body/div[3]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
-    saveprop_path = '/html/body/div[3]/div/div/div/footer/button'
+    addprop_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[1]/div/div[2]/button'
+    proptype_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
+    propname_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
+    saveprop_path = '/html/body/div[2]/div/div/div/footer/button'
     lock_path = '//*[@id="unlockable-content-toggle"]'
-    lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/section[6]/div[4]/div[2]/textarea'
-    create_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/form/div/div[1]/span/button'
+    lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[4]/div[2]/textarea'
+    create_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/div/div[1]/span/button'
+    created_close_path = '/html/body/div[5]/div/div/div/div[2]/button/i'
     visit_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
     sellbutton_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a[2]'
     price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[2]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
+    viewitem_path = '/html/body/div[2]/div/div/div/footer/a'
     filcheck_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button/i'
+
     global password_metamask, lockcontent_do
     password_metamask = r"elysion0922"
     lockcontent_do = 0
