@@ -299,45 +299,49 @@ def add_item(coll_num):
         while True:
             print('检测创建是否成功')
             try:
-                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, created_close_path)))
+                WebDriverWait(driver, 15, 0.5).until(EC.presence_of_element_located((By.XPATH, created_close_path)))
                 print('创建成功，Close键存在', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+                driver.find_element_by_xpath(created_close_path).click()
                 break
             except:
-                print('再次点Create')
                 try:
-                    driver.find_element_by_xpath(create_path).click()  # 点Create
-                    create_times = create_times + 1
-                    try:
-                        change_window(1)
-                        driver.find_element_by_xpath(
-                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-                        change_window(0)
-                    except:
-                        pass
+                    driver.find_element_by_xpath(sellbutton_path)
+                    break
                 except:
+                    print('再次点Create')
                     try:
-                        change_window(1)
-                        driver.find_element_by_xpath(
-                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-                        change_window(0)
-                    except:
-                        pass
-                if create_times == 10:
-                    create_times = 0
-                    driver.refresh()
-                    while True:
+                        driver.find_element_by_xpath(create_path).click()  # 点Create
+                        create_times = create_times + 1
                         try:
-                            WebDriverWait(driver, 30, 0.5).until(
-                                EC.presence_of_element_located((By.XPATH, inputpic_path)))
-                            break
+                            change_window(1)
+                            driver.find_element_by_xpath(
+                                '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                            change_window(0)
                         except:
-                            driver.refresh()
-                    fill_info(i, j, k, l, n)
-                    driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
-                    driver.find_element_by_xpath(create_path).click()  # 点Create
-                    print('完成刷新后Create点击')
+                            pass
+                    except:
+                        try:
+                            change_window(1)
+                            driver.find_element_by_xpath(
+                                '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                            change_window(0)
+                        except:
+                            pass
+                    if create_times == 10:
+                        create_times = 0
+                        driver.refresh()
+                        while True:
+                            try:
+                                WebDriverWait(driver, 30, 0.5).until(
+                                    EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                                break
+                            except:
+                                driver.refresh()
+                        fill_info(i, j, k, l, n)
+                        driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
+                        driver.find_element_by_xpath(create_path).click()  # 点Create
+                        print('完成刷新后Create点击')
         #time.sleep(60)
-        driver.find_element_by_xpath(created_close_path).click()
         WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))
         driver.find_element_by_xpath(sellbutton_path).click()
         while True:
@@ -363,7 +367,7 @@ def add_item(coll_num):
 
 if __name__ == "__main__":
     global sign_in_button, sign_in_unlock, opensea_path, homecreate_path, inputpic_path, names_path, descs_path, addprop_path, proptype_path, propname_path, saveprop_path, lock_path, lockcontent_path, \
-        create_path, created_close_path, visit_path, sellbutton_path, price_path, plist_path, listitem_path, viewitem_path, filcheck_path
+        create_path, created_close_path, visit_path, sellbutton_path, lowerprice_path, price_path, plist_path, listitem_path, viewitem_path, filcheck_path
     sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
     sign_in_unlock = '//*[@id="app-content"]/div/div[3]/div/div/button/span'
     opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
@@ -381,6 +385,7 @@ if __name__ == "__main__":
     created_close_path = '/html/body/div[5]/div/div/div/div[2]/button/i'
     visit_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/div/div/div[2]/a[1]'
     sellbutton_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a[2]'
+    lowerprice_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/button[2]'
     price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[2]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
