@@ -21,7 +21,6 @@ option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
 option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
 option.add_argument('--start-maximized')         # 全屏窗口
 driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
-driver.get(url)  # 设置打开网页
 
 # 第二部分：获取数据
 # 1.给根目录文件夹内的全部文件拼装绝对路径
@@ -49,14 +48,12 @@ def get_pics_info():
     nft_sensitive_switch = table.row_values(1)[4]
     nft_number = table.row_values(1)[5]
     nft_prop_switch = table.row_values(2)[1]
-    if nft_prop_switch == '启动':
-        nft_prop_type = table.row_values(2)[2]
-        nft_prop_name = table.row_values(3)[2]
+    nft_prop_type = table.row_values(2)[2]
+    nft_prop_name = table.row_values(3)[2]
     nft_level_switch = table.row_values(4)[1]
     nft_stats_switch = table.row_values(7)[1]
     nft_lockcontent_switch = table.row_values(10)[1]
-    if nft_lockcontent_switch == '启动':
-        nft_lockcontent = table.row_values(10)[2]
+    nft_lockcontent = table.row_values(10)[2]
     # 获取图片像素部分
     global nft_desc_pixels
     Image.MAX_IMAGE_PIXELS = 2300000000
@@ -65,21 +62,136 @@ def get_pics_info():
     for i in files_path:
         nft_desc_pixels.append(str(Image.open(i).size[0]) + '  x  ' + str(Image.open(i).size[1]) + '  px')
 
-def append_pic_name():
-    mix_name = nft_name_temp + ' #' + nft_number
-    return mix_name
+# 第三部分：判定操作
+# 1.切换页面
+def change_window(number):
+    handles = driver.window_handles  # 获取当前页面所有的句柄
+    driver.switch_to.window(handles[number])
 
-def append_pic_desc():
-    mix_desc = nft_desc_part1 + '\n\nID:' + nft_number + ' // ' + + nft_desc_part2
+# 2.收藏夹判定
+def check_coll():
+    while True:
+        print('检测收藏夹是否正确', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+        try:
+            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, coll)))  # 框
+            try:
+                driver.find_element_by_link_text("Suqingyan")
+                print('找到用户收藏夹')
+                break
+            except:
+                print('非用户收藏夹')
+                driver.find_element_by_xpath(opensea_path).click()  # 点击Opeasea
+                print('跳转首页')
+                try:
+                    WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, homecreate_path)))
+                    driver.find_element_by_xpath(homecreate_path).click()  # 点击首页Create
+                    print('跳转收藏夹')
+                except:
+                    driver.get(url)
+                    print('再次跳转首页')
+        except:
+            driver.get(url)
+    print('检测完成')
+
+# 第四部分：分项操作
+# 1.登录metamask钱包
+def sign_in_metamask():
+    while True:
+        try:
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button)))
+            driver.find_element_by_xpath(sign_in_button).click()  # 点击登录键
+            break
+        except:
+            driver.refresh()
+    while True:
+        try:
+            change_window(1)  # 切换至弹出页面
+            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
+            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
+            change_window(0)  # 切换回主页面
+            break
+        except:
+            time.sleep(1)
+
+# 第五部分：分部操作
+# 1.登录
+def sign_in():
+    driver.get(url)  # 设置打开网页
+    sign_in_metamask()
+    check_coll()
+def fill_info(i, j):
+    # step 1:Item.send
+    driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
+    # step 2:Name.send
+    nft_name = nft_name_temp + ' #' + nft_number
+    driver.find_element_by_xpath(names_path).send_keys(nft_name)  # 图片名称
+    # step 3:Description.send
+    nft_desc = nft_desc_part1 + '\n\nID:' + nft_number + ' // ' + j + '\n\n' + nft_desc_part2
+    driver.find_element_by_xpath(descs_path).send_keys(nft_desc)  # 描述
+    # step 4:Properties
+    if nft_prop_switch == '启动':
+        while True:
+            try:
+                driver.find_element_by_xpath(prop_switch_path).click()  # 增加Properties
+                break
+            except:
+                driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
+        while True:
+            try:
+                WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, prop_type_path)))
+                driver.find_element_by_xpath(prop_type_path).send_keys(nft_prop_type)  # 输入Prop_type
+                driver.find_element_by_xpath(prop_name_path).send_keys(nft_prop_name)  # 增加Prop_name
+                driver.find_element_by_xpath(prop_save_path).click()  # 点击Save_prop
+                break
+            except:
+                pass
+            ActionChains(driver).move_by_offset(800, 100).click().perform()
+            driver.find_element_by_xpath(prop_switch_path).click()  # 增加Properties
+    # step 5:Levels
+    if nft_level_switch == '启动':
+        pass
+    # step 6:Stats
+    if nft_stats_switch == '启动':
+        pass
+    # step 7:Unlockable Content
+    if nft_lockcontent_switch == '启动':
+        while True:
+            try:
+                driver.find_element_by_xpath(lockcontent_switch_path).click()  # Unlockable Content
+                break
+            except:
+                driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
+        driver.find_element_by_xpath(lockcontent_path).send_keys(nft_lockcontent)
+
 
 def nft():
+    sign_in()
     pics = get_files_path(r"pic")  # 完成第一个数组（图片）
-    for i in pics:
+    get_pics_info()
+    for i, j in zip(pics, nft_desc_pixels):
+        fill_info(i, j)
 
 
 
 
 
 if __name__ == "__main__":
-    global password_metamask, lockcontent_do
+    global sign_in_button, sign_in_unlock, opensea_path, homecreate_path
+    sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
+    sign_in_unlock = '//*[@id="app-content"]/div/div[3]/div/div/button/span'
+    opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
+    homecreate_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div[2]/div[1]/div[1]/a'
+    global inputpic_path, names_path, descs_path, prop_switch_path, prop_type_path, prop_name_path, prop_save_path, lockcontent_switch_path, lockcontent_path
+    inputpic_path = '//*[@id="media"]'
+    names_path = '//*[@id="name"]'
+    descs_path = '//*[@id="description"]'
+    prop_switch_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[1]/div/div[2]/button'
+    prop_type_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
+    prop_name_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
+    prop_save_path = '/html/body/div[2]/div/div/div/footer/button'
+    lockcontent_switch_path = '//*[@id="unlockable-content-toggle"]'
+    lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[4]/div[2]/textarea'
+    global password_metamask
     password_metamask = r"elysion0922"
+
+    nft()

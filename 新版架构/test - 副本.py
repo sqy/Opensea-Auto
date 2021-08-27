@@ -1,6 +1,12 @@
-a = [1,2,3,4,5,6,7,8,9]
+def a():
+    global b
+    b = 1 + c
 
+def b():
+    global c
+    c = 1
 
-for i in range(9):
-    print(i)
-    print('a={}'.format(a[i]))
+if __name__ == "__main__":
+    b()
+    a()
+    print(b)
