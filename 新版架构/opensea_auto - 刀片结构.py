@@ -115,11 +115,19 @@ def sign_in_metamask():
 
 # 第五部分：分部操作
 # 1.登录
-def sign_in():
+def sign_in(coll_num):
     driver.get(url)  # 设置打开网页
     sign_in_metamask()
     check_coll()
+    global add_item_url
+    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(coll_num) + ']/a'
+    coll_url = driver.find_elements_by_xpath(coll)
+    for get_url in coll_url:
+        add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
+
+# 2.Create界面
 def fill_info(i, j):
+    ## 此处应加签名判定操作
     # step 1:Item.send
     driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
     # step 2:Name.send
@@ -163,14 +171,69 @@ def fill_info(i, j):
                 driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(lockcontent_path).send_keys(nft_lockcontent)
 
+# 3.第一次Item界面
+def nft_sell():
+    while True:
+        print('检测创建是否成功')
+        try:
+            WebDriverWait(driver, 15, 0.5).until(EC.presence_of_element_located((By.XPATH, created_close_path)))
+            print('创建成功，Close键存在', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+            driver.find_element_by_xpath(created_close_path).click()
+            break
+        except:
+            try:
+                driver.find_element_by_xpath(sellbutton_path)
+                break
+            except:
+                print('再次点Create')
+                try:
+                    create_times = create_times + 1
+                    driver.find_element_by_xpath(create_path).click()  # 点Create
+                    try:
+                        change_window(1)
+                        driver.find_element_by_xpath(
+                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        change_window(0)
+                    except:
+                        pass
+                except:
+                    try:
+                        change_window(1)
+                        driver.find_element_by_xpath(
+                            '//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        change_window(0)
+                    except:
+                        pass
+                if create_times == 10:
+                    create_times = 0
+                    driver.refresh()
+                    while True:
+                        try:
+                            WebDriverWait(driver, 30, 0.5).until(
+                                EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                            break
+                        except:
+                            driver.refresh()
+                    fill_info(i, j, k, l, n)
+                    driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
+                    driver.find_element_by_xpath(create_path).click()  # 点Create
+                    print('完成刷新后Create点击')
 
-def nft():
-    sign_in()
+# 4.上架界面
+def nft_plist():
+
+
+def nft(coll_num):
+    global nft_slice
+    nft_slice = 0
+    sign_in(coll_num)
     pics = get_files_path(r"pic")  # 完成第一个数组（图片）
     get_pics_info()
     for i, j in zip(pics, nft_desc_pixels):
+        driver.get(add_item_url)
         fill_info(i, j)
-
+        nft_sell()
+        nft_plist()
 
 
 
@@ -194,4 +257,4 @@ if __name__ == "__main__":
     global password_metamask
     password_metamask = r"elysion0922"
 
-    nft()
+    nft(1)
