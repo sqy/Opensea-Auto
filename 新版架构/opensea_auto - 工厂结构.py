@@ -10,7 +10,8 @@ from xlutils.copy import copy  # 导入copy模块
 import time
 import os
 
-# 启用带插件的浏览器
+# 第一部分：浏览器参数
+# 1.启用带插件的浏览器
 #plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
 plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
 #plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
