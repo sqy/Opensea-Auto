@@ -197,7 +197,7 @@ class Fill:
             pass
 
     # step 9:Create
-    def create(self):
+    def create(self, i, j):
         driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(create_path).click()  # 点Create
         # Create按键是否成功及Sell界面判定
@@ -344,7 +344,7 @@ def nft(coll_num):
         Fill().stats()
         Fill().lockcontent()
         Fill().sensitive()
-        Fill().create()
+        Fill().create(i, j)
         while True:
             try:
                 WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))
