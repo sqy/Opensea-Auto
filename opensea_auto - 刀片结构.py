@@ -71,31 +71,8 @@ def change_window(number):
     handles = driver.window_handles  # 获取当前页面所有的句柄
     driver.switch_to.window(handles[number])
 
-# 2.有限尝试签名
-def try_sign(times):
-    for i in range(1, times + 2):
-        try:
-            change_window(1)  # 切换至弹出页面
-            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
-            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
-            change_window(0)  # 切换回主页面
-            break
-        except:
-            if i > 1:
-                time.sleep(1)
-
-# 3.无限尝试签名
-def try_sign_True():
-    while True:
-        try:
-            change_window(1)  # 切换至弹出页面
-            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
-            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
-            change_window(0)  # 切换回主页面
-            break
-        except:
-            time.sleep(1)
-def postlist_sign(s):
+# 2.尝试签名
+def try_sign(s):
     times = 0
     while times < s:
         times += 1
@@ -106,6 +83,7 @@ def postlist_sign(s):
             break
         except:
             time.sleep(1)
+
 # 第四部分：判定操作
 # 1.收藏夹判定
 def check_coll():
@@ -114,32 +92,37 @@ def check_coll():
         try:
             WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, coll)))  # 框
             try:
-                driver.find_element_by_link_text("Suqingyan")
+                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.LINK_TEXT, "Suqingyan")))
+                print('找到用户收藏夹')
                 break
             except:
-                driver.find_element_by_xpath(opensea_path).click()  # 点击Opeasea
                 try:
-                    WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, homecreate_path)))
-                    driver.find_element_by_xpath(homecreate_path).click()  # 点击首页Create
+                    driver.find_element_by_xpath(opensea_path).click()  # 点击Opeasea
                 except:
                     driver.get(url)
         except:
             driver.get(url)
 
 # 第五部分：分步操作
-
-# 第五部分：分部操作
 # 1.登录
 def sign_in(coll_num):
     driver.get(url)  # 设置打开网页
     while True:
         try:
-            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button)))
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button))).send_keys(Keys.CONTROL + '0')
             driver.find_element_by_xpath(sign_in_button).click()  # 点击登录键
             break
         except:
             driver.refresh()
-    try_sign_True()
+    while True:
+        try:
+            change_window(1)  # 切换至弹出页面
+            driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
+            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
+            change_window(0)  # 切换回主页面
+            break
+        except:
+            time.sleep(1)
     global coll
     coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(coll_num) + ']/a'
     check_coll()
@@ -149,22 +132,21 @@ def sign_in(coll_num):
         add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
 
 # 2.Create界面
-
 class Fill:
     def __init__(self):
-        postlist_sign(1)
+        try_sign(1)
     # step 1:Item.send
     def item(self, i):
         driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
 
     # step 2:Name.send
     def name(self):
-        nft_name = nft_name_temp + ' #' + str(nft_number)
+        nft_name = nft_name_temp + ' #' + str(int(nft_number))
         driver.find_element_by_xpath(names_path).send_keys(nft_name)  # 图片名称
 
     # step 3:Description.send
     def desc(self, j):
-        nft_desc = nft_desc_part1 + '\n\nID:' + str(nft_number) + ' // ' + j + '\n\n' + nft_desc_part2
+        nft_desc = nft_desc_part1 + '\n\nID:' + str(int(nft_number)) + ' // ' + j + '\n\n' + nft_desc_part2
         driver.find_element_by_xpath(descs_path).send_keys(nft_desc)  # 描述
 
     # step 4:Properties
@@ -281,6 +263,7 @@ class Fill:
                         if conditionnow == 2:
                             break
 
+# 3.Post list界面
 def postlist(m):
     postlist_times = 0
     clickplist_times = 0
@@ -300,7 +283,7 @@ def postlist(m):
                     driver.find_element_by_xpath(viewitem_path)
                     driver.refresh()
                 except:
-                    postlist_sign(180)
+                    try_sign(180)
                     try:
                         check_plist = 0
                         WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, viewitem_path)))
@@ -317,7 +300,7 @@ def postlist(m):
                                 try:
                                     driver.find_element_by_xpath(listitem_path)
                                     try:
-                                        postlist_sign(180)
+                                        try_sign(180)
                                     except:
                                         pass
                                 except:
@@ -346,7 +329,7 @@ def postlist(m):
 
 def nft(coll_num):
     a = 0
-    global nft_slice
+    global nft_slice, nft_number
     nft_slice = 0
     sign_in(coll_num)
     pics = get_files_path(r"pic")  # 完成第一个数组（图片）
@@ -382,7 +365,6 @@ def nft(coll_num):
 
         print('输入价格')
         postlist(nft_price)
-
         a += 1
         print("图片序号:{}，本次上传第{}张".format(int(nft_number), int(a)), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))  # 输出图片序号
         os.remove(i)  # 删除已上传图片
@@ -394,11 +376,10 @@ def nft(coll_num):
 
 
 if __name__ == "__main__":
-    global sign_in_button, sign_in_unlock, opensea_path, homecreate_path
+    global sign_in_button, sign_in_unlock, opensea_path
     sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
     sign_in_unlock = '//*[@id="app-content"]/div/div[3]/div/div/button/span'
     opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
-    homecreate_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div[2]/div[1]/div[1]/a'
     global inputpic_path, names_path, descs_path, prop_switch_path, prop_type_path, prop_name_path, prop_save_path, lockcontent_switch_path, lockcontent_path, create_path
     inputpic_path = '//*[@id="media"]'
     names_path = '//*[@id="name"]'
@@ -411,12 +392,13 @@ if __name__ == "__main__":
     lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[4]/div[2]/textarea'
     create_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/div/div[1]/span/button'
     global created_close_path, sellbutton_path, lowerprice_path
-    created_close_path = '/html/body/div[5]/div/div/div/div[2]/button/i'
-    sellbutton_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a[2]'
+    #created_close_text = 'close'
+    created_close_path = '/html/body/div[4]/div/div/div/div[2]/button/i'
+    sellbutton_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/a'
     lowerprice_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/button[2]'
     global price_path, plist_path, listitem_path, viewitem_path, filcheck_path
     price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
-    plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[2]/button'
+    plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
     listitem_path = '/html/body/div[2]/div/div/div/header/h4'
     viewitem_path = '/html/body/div[2]/div/div/div/footer/a'
     filcheck_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div[1]/div/div[1]/div[2]/section[1]/div/div[2]/div/div/span/button/i'
