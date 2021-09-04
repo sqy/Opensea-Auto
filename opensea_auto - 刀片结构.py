@@ -13,8 +13,8 @@ import os
 # 第一部分：浏览器参数
 # 1.启用带插件的浏览器
 #plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
-plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
-#plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
+#plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
+plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
@@ -35,7 +35,7 @@ def get_files_path(pics_path):
 def get_pics_info():
     # 表格参数部分
     global wb, ws
-    global nft_name_temp, nft_desc_part1, nft_desc_part2, nft_price, nft_sensitive_switch, nft_number
+    global nft_name_temp, nft_desc_part1, nft_desc_part2, nft_price, nft_sensitive_switch, nft_coll, nft_number
     global nft_prop_switch, nft_prop_type, nft_prop_name
     global nft_level_switch
     global nft_stats_switch
@@ -49,7 +49,8 @@ def get_pics_info():
     nft_desc_part2 = table.row_values(1)[2]
     nft_price = table.row_values(1)[3]
     nft_sensitive_switch = table.row_values(1)[4]
-    nft_number = table.row_values(1)[5]
+    nft_coll = table.row_values(1)[5]
+    nft_number = table.row_values(1)[6]
     nft_prop_switch = table.row_values(2)[1]
     nft_prop_type = table.row_values(2)[2]
     nft_prop_name = table.row_values(3)[2]
@@ -58,13 +59,21 @@ def get_pics_info():
     nft_lockcontent_switch = table.row_values(10)[1]
     nft_lockcontent = table.row_values(10)[2]
     # 获取图片像素部分
-    global nft_desc_pixels
+    global nft_desc_pixels, files_path
     Image.MAX_IMAGE_PIXELS = 2300000000
-    files_path = get_files_path('pic')
+    files_path = get_files_path(r"pic")
     nft_desc_pixels = []
     for i in files_path:
         nft_desc_pixels.append(str(Image.open(i).size[0]) + '  x  ' + str(Image.open(i).size[1]) + '  px')
 
+    # 获取收藏夹地址
+    global coll
+    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(nft_coll) + ']/a'
+    check_coll()
+    global add_item_url
+    coll_url = driver.find_elements_by_xpath(coll)
+    for get_url in coll_url:
+        add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
 # 第三部分：基础操作
 # 1.切换页面
 def change_window(number):
@@ -105,7 +114,7 @@ def check_coll():
 
 # 第五部分：分步操作
 # 1.登录
-def sign_in(coll_num):
+def sign_in():
     driver.get(url)  # 设置打开网页
     while True:
         try:
@@ -123,18 +132,36 @@ def sign_in(coll_num):
             break
         except:
             time.sleep(1)
-    global coll
-    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(coll_num) + ']/a'
-    check_coll()
-    global add_item_url
-    coll_url = driver.find_elements_by_xpath(coll)
-    for get_url in coll_url:
-        add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
+
 
 # 2.Create界面
 class Fill:
-    def __init__(self):
+    def __init__(self, i, j):
         try_sign(1)
+        if nft_slice == 1:
+            self.item(i)
+        if nft_slice == 2:
+            self.name()
+        if nft_slice == 3:
+            self.desc(j)
+        if nft_slice == 4:
+            self.prop()
+        if nft_slice == 5:
+            self.level()
+        if nft_slice == 6:
+            self.stats()
+        if nft_slice == 7:
+            self.lockcontent()
+        if nft_slice == 8:
+            self.sensitive()
+        if nft_slice == 9:
+            self.create(i, j)
+    def __del__(self):
+        global nft_slice
+        # 加特殊情况if判定
+        # else
+        nft_slice = nft_slice + 1
+
     # step 1:Item.send
     def item(self, i):
         driver.find_element_by_xpath(inputpic_path).send_keys(i)  # 上传图片
@@ -249,14 +276,14 @@ class Fill:
                                 except:
                                     driver.refresh()
                         if conditionnow == 1:
-                            Fill().item(i)
-                            Fill().name()
-                            Fill().desc(j)
-                            Fill().prop()
-                            Fill().level()
-                            Fill().stats()
-                            Fill().lockcontent()
-                            Fill().sensitive()
+                            Fill(i, j).item(i)
+                            Fill(i, j).name()
+                            Fill(i, j).desc(j)
+                            Fill(i, j).prop()
+                            Fill(i, j).level()
+                            Fill(i, j).stats()
+                            Fill(i, j).lockcontent()
+                            Fill(i, j).sensitive()
                             driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
                             driver.find_element_by_xpath(create_path).click()  # 点Create
                             print('完成刷新后Create点击')
@@ -327,24 +354,17 @@ def postlist(m):
                 if '404' in url_404:
                     driver.back()
 
-def nft(coll_num):
+def nft():
     a = 0
     global nft_slice, nft_number
-    nft_slice = 0
-    sign_in(coll_num)
-    pics = get_files_path(r"pic")  # 完成第一个数组（图片）
+    sign_in()
     get_pics_info()
-    for i, j in zip(pics, nft_desc_pixels):
+    for i, j in zip(files_path, nft_desc_pixels):
         driver.get(add_item_url)
-        Fill().item(i)
-        Fill().name()
-        Fill().desc(j)
-        Fill().prop()
-        Fill().level()
-        Fill().stats()
-        Fill().lockcontent()
-        Fill().sensitive()
-        Fill().create(i, j)
+        nft_slice = 1
+        while nft_slice < 10:
+            Fill(i, j)
+
         while True:
             try:
                 WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))
@@ -405,4 +425,4 @@ if __name__ == "__main__":
     global password_metamask
     password_metamask = r"elysion0922"
 
-    nft(1)
+    nft()
