@@ -5,7 +5,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/file.xls" beforeDir="false" afterPath="$PROJECT_DIR$/file.xls" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/opensea_auto - 刀片结构.py" beforeDir="false" afterPath="$PROJECT_DIR$/opensea_auto - 刀片结构.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/现存问题.txt" beforeDir="false" afterPath="$PROJECT_DIR$/现存问题.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +24,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
   </component>
-  <component name="RunManager" selected="Python.test">
+  <component name="RunManager" selected="Python.opensea_auto - 刀片结构">
     <configuration name="[005][TreeF]Concentric Tree" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Opensea-Auto" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -112,9 +111,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.[005][TreeF]Concentric Tree" />
         <item itemvalue="Python.opensea_auto - 刀片结构" />
+        <item itemvalue="Python.[005][TreeF]Concentric Tree" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.test - 副本" />
       </list>
     </recent_temporary>

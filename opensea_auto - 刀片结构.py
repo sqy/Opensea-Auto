@@ -66,14 +66,7 @@ def get_pics_info():
     for i in files_path:
         nft_desc_pixels.append(str(Image.open(i).size[0]) + '  x  ' + str(Image.open(i).size[1]) + '  px')
 
-    # 获取收藏夹地址
-    global coll
-    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(nft_coll) + ']/a'
-    check_coll()
-    global add_item_url
-    coll_url = driver.find_elements_by_xpath(coll)
-    for get_url in coll_url:
-        add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
+
 # 第三部分：基础操作
 # 1.切换页面
 def change_window(number):
@@ -132,7 +125,14 @@ def sign_in():
             break
         except:
             time.sleep(1)
-
+    # 获取收藏夹地址
+    global coll
+    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(nft_coll) + ']/a'
+    check_coll()
+    global add_item_url
+    coll_url = driver.find_elements_by_xpath(coll)
+    for get_url in coll_url:
+        add_item_url = str(get_url.get_attribute("href")) + '/assets/create'
 
 # 2.Create界面
 class Fill:
@@ -245,19 +245,10 @@ class Fill:
                     try:
                         create_times = create_times + 1
                         driver.find_element_by_xpath(create_path).click()  # 点Create
-                        try:
-                            change_window(1)
-                            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-                            change_window(0)
-                        except:
-                            pass
+                        try_sign(1)
                     except:
-                        try:
-                            change_window(1)
-                            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
-                            change_window(0)
-                        except:
-                            pass
+                        try_sign(1)
+
                     if create_times == 10:
                         create_times = 0
                         driver.refresh()
@@ -355,10 +346,10 @@ def postlist(m):
                     driver.back()
 
 def nft():
-    a = 0
-    global nft_slice, nft_number
-    sign_in()
     get_pics_info()
+    sign_in()
+    global nft_slice, nft_number
+    this_times = 0
     for i, j in zip(files_path, nft_desc_pixels):
         driver.get(add_item_url)
         nft_slice = 1
@@ -385,11 +376,11 @@ def nft():
 
         print('输入价格')
         postlist(nft_price)
-        a += 1
-        print("图片序号:{}，本次上传第{}张".format(int(nft_number), int(a)), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))  # 输出图片序号
+        this_times += 1
+        print("图片序号:{}，本次上传第{}张".format(int(nft_number), int(this_times)), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))  # 输出图片序号
         os.remove(i)  # 删除已上传图片
         nft_number = nft_number + 1
-        ws.write(1, 5, nft_number)  # 改变（0,0）的值
+        ws.write(1, 6, nft_number)  # 改变（0,0）的值
         wb.save('file.xls')
         driver.get(add_item_url)  # 跳转additem
         print('跳转additem')
