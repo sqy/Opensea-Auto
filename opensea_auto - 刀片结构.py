@@ -13,8 +13,8 @@ import os
 # 第一部分：浏览器参数
 # 1.启用带插件的浏览器
 #plug_path = r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/"
-#plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
-plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
+plug_path = r"C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/"
+#plug_path = r"C:/Users/mayn/AppData/Local/Google/Chrome/User Data/"
 url = r"https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir="+plug_path)  # 加载Chrome全部插件
@@ -156,11 +156,10 @@ class Fill:
             self.sensitive()
         if nft_slice == 9:
             self.create(i, j)
-    def __del__(self):
-        global nft_slice
-        # 加特殊情况if判定
-        # else
-        nft_slice = nft_slice + 1
+        if nft_slice == 10:
+            self.close()
+        if nft_slice == 11:
+            self.sell()
 
     # step 1:Item.send
     def item(self, i):
@@ -227,60 +226,66 @@ class Fill:
     def create(self, i, j):
         driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(create_path).click()  # 点Create
-        # Create按键是否成功及Sell界面判定
-        create_times = 0
-        while True:
+
+    # step 10:Close
+    def close(self):
+        driver.find_element_by_xpath(created_close_path).click()
+
+    # step 11:Sell
+    def sell(self):
+        driver.find_element_by_xpath(sellbutton_path).click()
+
+def step_check():
+    global nft_slice, create_times
+    # 加特殊情况if判定
+    # Create按键是否成功及Sell界面判定
+    if nft_slice == 9:
+        try:
             print('检测创建是否成功')
+            WebDriverWait(driver, 15, 0.5).until(EC.presence_of_element_located((By.XPATH, created_close_path)))
+            print('创建成功，Close键存在', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+            nft_slice = 10
+        except:
             try:
-                WebDriverWait(driver, 15, 0.5).until(EC.presence_of_element_located((By.XPATH, created_close_path)))
-                print('创建成功，Close键存在', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-                driver.find_element_by_xpath(created_close_path).click()
-                break
+                driver.find_element_by_xpath(sellbutton_path)
+                nft_slice = 11
             except:
+                print('再次点Create')
                 try:
-                    driver.find_element_by_xpath(sellbutton_path)
+                    create_times = create_times + 1
+                    driver.find_element_by_xpath(create_path).click()  # 点Create
+                    try_sign(1)
+                except:
+                    try_sign(1)
+        if create_times == 10:
+            create_times = 0
+            driver.refresh()
+            try_times = 0
+            while True:
+                try:
+                    WebDriverWait(driver, 1, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                    nft_slice = 1
                     break
                 except:
-                    print('再次点Create')
                     try:
-                        create_times = create_times + 1
-                        driver.find_element_by_xpath(create_path).click()  # 点Create
-                        try_sign(1)
+                        WebDriverWait(driver, 1, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))
+                        nft_slice = 11
+                        break
                     except:
-                        try_sign(1)
+                        try_times = try_times + 1
+                        if try_times == 60:
+                            try_times = 0
+                            driver.refresh()
+    elif nft_slice == 11:
+        try:
+            WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, price_path)))  # 输价
+            nft_slice = 12
+        except:
+            driver.refresh()
 
-                    if create_times == 10:
-                        create_times = 0
-                        driver.refresh()
-                        conditionnow = 0
-                        while True:
-                            try:
-                                WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
-                                conditionnow = 1
-                                break
-                            except:
-                                try:
-                                    driver.find_element_by_xpath(sellbutton_path)
-                                    conditionnow = 2
-                                    print('找到Sell键')
-                                    break
-                                except:
-                                    driver.refresh()
-                        if conditionnow == 1:
-                            Fill(i, j).item(i)
-                            Fill(i, j).name()
-                            Fill(i, j).desc(j)
-                            Fill(i, j).prop()
-                            Fill(i, j).level()
-                            Fill(i, j).stats()
-                            Fill(i, j).lockcontent()
-                            Fill(i, j).sensitive()
-                            driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
-                            driver.find_element_by_xpath(create_path).click()  # 点Create
-                            print('完成刷新后Create点击')
-                        if conditionnow == 2:
-                            break
-
+    # 正常情况
+    else:
+        nft_slice = nft_slice + 1
 # 3.Post list界面
 def postlist(m):
     postlist_times = 0
@@ -348,31 +353,19 @@ def postlist(m):
 def nft():
     get_pics_info()
     sign_in()
-    global nft_slice, nft_number
+    global nft_slice, nft_number, create_times
     this_times = 0
     for i, j in zip(files_path, nft_desc_pixels):
         driver.get(add_item_url)
+        create_times = 0
         nft_slice = 1
-        while nft_slice < 10:
-            Fill(i, j)
-
-        while True:
+        while nft_slice < 12:
             try:
-                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, sellbutton_path)))
-                driver.find_element_by_xpath(sellbutton_path).click()
-                break
+                Fill(i, j)
             except:
-                driver.refresh()
-        while True:
-            try:
-                WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, price_path)))  # 输价
-                break
-            except:
-                driver.refresh()
-                try:
-                    driver.find_element_by_xpath(sellbutton_path).click()
-                except:
-                    pass
+                pass
+            finally:
+                step_check()
 
         print('输入价格')
         postlist(nft_price)
