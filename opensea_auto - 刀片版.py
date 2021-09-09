@@ -266,18 +266,25 @@ def error_check():
                 nft_slice = 1
             else:
                 try:
-                    driver.find_element_by_xpath(lowerprice_path)
+                    WebDriverWait(driver, 5, 0.5).until(EC.presence_of_element_located((By.XPATH, lowerprice_path)))
                     nft_slice = 16
                 except:
                     try:
-                        driver.find_element_by_link_text(sellbutton_text)
-                        nft_slice = 11
+                        driver.find_element_by_xpath(created_close_path)
+                        nft_slice = 10
                     except:
                         try:
-                            driver.find_element_by_xpath(nft_price)
-                            nft_slice = 12
+                            driver.find_element_by_link_text(sellbutton_text)
+                            nft_slice = 11
                         except:
-                            driver.refresh()
+                            try:
+                                driver.find_element_by_link_text(viewitem_path).click()
+                            except:
+                                try:
+                                    driver.find_element_by_xpath(price_path)
+                                    nft_slice = 12
+                                except:
+                                    driver.refresh()
     except:
         print('error pass')
 
@@ -431,13 +438,13 @@ if __name__ == "__main__":
     lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[4]/div[2]/textarea'
     create_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/div/div[1]/span/button'
     global created_close_path, sellbutton_text, lowerprice_path
-    created_close_path = '/html/body/div[4]/div/div/div/div[2]/button/i'
+    created_close_path = '/html/body/div[6]/div/div/div/div[2]/button/i'  # 确定用link_text 'close' 无效
     sellbutton_text = 'Sell'
     lowerprice_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/button[2]'
     global price_path, plist_path, listitem_path, viewitem_path
     price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
     plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
-    listitem_path = '/html/body/div[2]/div/div/div/header/h4'
-    viewitem_path = '/html/body/div[2]/div/div/div/footer/a'
+    listitem_path = '/html/body/div[4]/div/div/div/header/h4'
+    viewitem_path = '/html/body/div[4]/div/div/div/footer/a'
 
     nft()
