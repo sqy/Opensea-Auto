@@ -266,7 +266,7 @@ def error_check():
                 nft_slice = 1
             else:
                 try:
-                    WebDriverWait(driver, 5, 0.5).until(EC.presence_of_element_located((By.XPATH, lowerprice_path)))
+                    WebDriverWait(driver, 15, 0.5).until(EC.presence_of_element_located((By.XPATH, lowerprice_path)))
                     nft_slice = 16
                 except:
                     try:
@@ -278,13 +278,18 @@ def error_check():
                             nft_slice = 11
                         except:
                             try:
+                                change_window(0)  # 未知原因上架签名后，窗口没有切回来
                                 driver.find_element_by_link_text(viewitem_path).click()
                             except:
                                 try:
                                     driver.find_element_by_xpath(price_path)
                                     nft_slice = 12
                                 except:
-                                    driver.refresh()
+                                    try:
+                                        driver.find_element_by_xpath(inputpic_path)
+                                        driver.back()
+                                    except:
+                                        driver.refresh()
     except:
         print('error pass')
 
