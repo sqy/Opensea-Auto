@@ -246,6 +246,8 @@ class Fill:
 
     # step 14:View item
     def view_item(self):
+        global viewitem_condition
+        viewitem_condition = 1
         change_window(0)  # 未知原因上架签名后，窗口没有切回来
         WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, viewitem_path))).click()
 
@@ -290,15 +292,18 @@ def error_check():
                                         finish_url = str(get_url.get_attribute("href"))
                                     driver.get(finish_url)
                             except:
-                                try:
-                                    driver.find_element_by_xpath(price_path)
-                                    nft_slice = 12
-                                except:
+                                if viewitem_condition == 1:
+                                    driver.refresh()
+                                else:
                                     try:
-                                        driver.find_element_by_xpath(inputpic_path)
-                                        driver.back()
+                                        driver.find_element_by_xpath(price_path)
+                                        nft_slice = 12
                                     except:
-                                        driver.refresh()
+                                        try:
+                                            driver.find_element_by_xpath(inputpic_path)
+                                            driver.back()
+                                        except:
+                                            driver.refresh()
     except:
         print('error pass')
 
@@ -407,13 +412,14 @@ def nft():
     driver = webdriver.Chrome(chrome_options=option)  # 更改Chrome默认选项
     # 登录
     sign_in()
-    global nft_slice, nft_number, create_times, click_viewitem_times
+    global nft_slice, nft_number, create_times, click_viewitem_times, viewitem_condition
     this_times = 0
     # NFT创建上架
     for i, j in zip(files_path, nft_desc_pixels):
         driver.get(add_item_url)
         create_times = 0
         click_viewitem_times = 0
+        viewitem_condition = 0
         nft_slice = 1
         while nft_slice < 16:
             try:
