@@ -71,7 +71,10 @@ def try_sign(s):
         times += 1
         try:
             change_window(1)
-            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+            try:
+                driver.find_element_by_xpath(metamask_sign).click()  # 签名
+            except:
+                driver.find_element_by_xpath(metamask_sign2).click()  # 签名
             change_window(0)
             break
         except:
@@ -102,7 +105,7 @@ def sign_in():
     driver.get(url)  # 设置打开网页
     while True:
         try:
-            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button))).send_keys(Keys.CONTROL + '0')
+            WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, sign_in_button))).send_keys(Keys.CONTROL + '0')
             driver.find_element_by_xpath(sign_in_button).click()  # 点击登录键
             break
         except:
@@ -111,7 +114,10 @@ def sign_in():
         try:
             change_window(1)  # 切换至弹出页面
             driver.find_element_by_id("password").send_keys(password_metamask)  # 输入密码
-            driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
+            try:
+                driver.find_element_by_xpath(sign_in_unlock).click()  # 点确定
+            except:
+                driver.find_element_by_xpath(sign_in_unlock2).click()  # 点确定
             change_window(0)  # 切换回主页面
             break
         except:
@@ -181,7 +187,7 @@ class Fill:
                     driver.find_element_by_xpath(prop_switch_path).click()  # 增加Properties
                     break
                 except:
-                    driver.execute_script("window.scrollTo(0,200);")  # 拖滚动条下移，防止界面找不到元素
+                    driver.execute_script("window.scrollTo(0,800);")  # 拖滚动条下移，防止界面找不到元素
             while True:
                 try:
                     WebDriverWait(driver, 3, 0.5).until(EC.presence_of_element_located((By.XPATH, prop_type_path)))
@@ -207,6 +213,7 @@ class Fill:
     # step 7:Unlockable Content
     def lockcontent(self):
         if nft_lockcontent_switch == '启动':
+            driver.execute_script("window.scrollTo(0,1000);")  # 拖滚动条下移，防止界面找不到元素
             while True:
                 try:
                     driver.find_element_by_xpath(lockcontent_switch_path).click()  # Unlockable Content
@@ -222,7 +229,7 @@ class Fill:
 
     # step 9:Create
     def create(self):
-        driver.execute_script("window.scrollTo(0,10000);")  # 拖滚动条下移，防止界面找不到元素
+        driver.execute_script("window.scrollTo(0,2400);")  # 拖滚动条下移，防止界面找不到元素
         driver.find_element_by_xpath(create_path).click()  # 点Create
 
     # step 10:Close
@@ -256,16 +263,20 @@ class Fill:
         WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, lowerprice_path)))
 
 def error_check():
-    global create_times, nft_slice, click_viewitem_times
+    global create_times, nft_slice, click_viewitem_times, viewitem_condition
     print('error step ' + str(nft_slice))
     try:
         url_check = driver.current_url
         if '404' in url_check:
             driver.back()
         elif nft_slice == 15:
-            driver.refresh()
+            try:
+                driver.find_element_by_xpath(price_path)
+                nft_slice = 12
+            except:
+                driver.refresh()
         else:
-            if nft_slice < 10:
+            if nft_slice < 9:
                 driver.get(add_item_url)
                 create_times = 0
                 nft_slice = 1
@@ -290,10 +301,15 @@ def error_check():
                                     temp_url = driver.find_elements_by_xpath(viewitem_path)
                                     for get_url in temp_url:
                                         finish_url = str(get_url.get_attribute("href"))
-                                    driver.get(finish_url)
+                                    try:
+                                        driver.get(finish_url)
+                                    except:
+                                        pass
                             except:
                                 if viewitem_condition == 1:
                                     driver.refresh()
+                                    viewitem_condition = 0
+                                    nft_slice = 12
                                 else:
                                     try:
                                         driver.find_element_by_xpath(price_path)
@@ -377,7 +393,10 @@ def step_check():
                 except:
                     try:
                         change_window(1)
-                        driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div[3]/button[2]').click()  # 签名
+                        try:
+                            driver.find_element_by_xpath(metamask_sign).click()  # 签名
+                        except:
+                            driver.find_element_by_xpath(metamask_sign2).click()  # 签名
                         change_window(0)
                         nft_slice = 14
                         break
@@ -416,7 +435,13 @@ def nft():
     this_times = 0
     # NFT创建上架
     for i, j in zip(files_path, nft_desc_pixels):
-        driver.get(add_item_url)
+        while True:
+            try:
+                driver.get(add_item_url)
+                WebDriverWait(driver, 60, 0.5).until(EC.presence_of_element_located((By.XPATH, inputpic_path)))
+                break
+            except:
+                pass
         create_times = 0
         click_viewitem_times = 0
         viewitem_condition = 0
@@ -438,34 +463,37 @@ def nft():
         nft_number = nft_number + 1
         ws.write(1, 6, nft_number)  # 改变（0,0）的值
         wb.save('file.xls')
-        driver.get(add_item_url)  # 跳转additem
         print('跳转additem')
 
 
 if __name__ == "__main__":
-    global sign_in_button, sign_in_unlock, opensea_path
-    sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[1]/div[2]/button'
-    sign_in_unlock = '//*[@id="app-content"]/div/div[3]/div/div/button/span'
+    global sign_in_button, sign_in_unlock, sign_in_unlock2, opensea_path, metamask_sign, metamask_sign2
+    sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[2]/ul/li[1]/button'
+    sign_in_unlock = '/html/body/div[1]/div/div[3]/div/div/button'
+    sign_in_unlock2 = '/html/body/div[1]/div/div[2]/div/div/button'
     opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
+    metamask_sign = '/html/body/div[1]/div/div[2]/div/div[3]/button[2]'
+    metamask_sign2 = '/html/body/div[1]/div/div[3]/div/div[3]/button[2]'
     global inputpic_path, names_path, descs_path, prop_switch_path, prop_type_path, prop_name_path, prop_save_path, lockcontent_switch_path, lockcontent_path, create_path
     inputpic_path = '//*[@id="media"]'
     names_path = '//*[@id="name"]'
     descs_path = '//*[@id="description"]'
-    prop_switch_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[1]/div/div[2]/button'
+    prop_switch_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section/div[1]/div/div[2]/button'
     prop_type_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
     prop_name_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
     prop_save_path = '/html/body/div[2]/div/div/div/footer/button'
     lockcontent_switch_path = '//*[@id="unlockable-content-toggle"]'
-    lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section[6]/div[4]/div[2]/textarea'
-    create_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/div/div[1]/span/button'
+    lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section/div[4]/div[2]/textarea'
+    create_path = '/html/body/div[1]/div[1]/main/div/div/section/div[2]/form/div[9]/div[1]/span/button'
     global created_close_path, sellbutton_text, lowerprice_path
-    created_close_path = '/html/body/div[6]/div/div/div/div[2]/button/i'  # 确定用link_text 'close' 无效
+    created_close_path = '/html/body/div[5]/div/div/div/div[2]/button/i'  # 确定用link_text 'close' 无效
     sellbutton_text = 'Sell'
     lowerprice_path = '//*[@id="__next"]/div[1]/main/div/div/div[1]/div/button[2]'
     global price_path, plist_path, listitem_path, viewitem_path
-    price_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[1]/div/div[3]/div[1]/div[2]/div/div/input'
-    plist_path = '//*[@id="__next"]/div[1]/main/div/div/div[2]/div/div[2]/div/div[3]/button'
+    price_path = '/html/body/div[1]/div[1]/main/div/div/div[3]/div/div[2]/div/div[1]/form/div[2]/div/div[2]/div/div/div[2]/input'
+    plist_path = '/html/body/div[1]/div[1]/main/div/div/div[3]/div/div[2]/div/div[1]/form/div[6]/button'
     listitem_path = '/html/body/div[4]/div/div/div/header/h4'
     viewitem_path = '/html/body/div[4]/div/div/div/footer/a'
 
     nft()
+
