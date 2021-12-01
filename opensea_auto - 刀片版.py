@@ -24,7 +24,7 @@ def get_pics_info():
     # 表格参数部分
     global wb, ws
     global nft_name_temp, nft_desc_part1, nft_desc_part2, nft_price, nft_sensitive_switch, nft_coll, nft_number
-    global password_metamask, user_name, plug_path
+    global password_metamask, plug_path
     global nft_prop_switch, nft_prop_type, nft_prop_name
     global nft_level_switch
     global nft_stats_switch
@@ -41,8 +41,7 @@ def get_pics_info():
     nft_coll = table.row_values(1)[5]
     nft_number = table.row_values(1)[6]
     password_metamask = table.row_values(1)[7]
-    user_name = table.row_values(1)[8]
-    plug_path = table.row_values(1)[9]
+    plug_path = table.row_values(1)[8]
     nft_prop_switch = table.row_values(2)[1]
     nft_prop_type = table.row_values(2)[2]
     nft_prop_name = table.row_values(3)[2]
@@ -88,7 +87,7 @@ def check_coll():
         try:
             WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.XPATH, coll)))  # 框
             try:
-                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.LINK_TEXT, user_name)))
+                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.LINK_TEXT, 'you')))
                 print('找到用户收藏夹')
                 break
             except:
