@@ -123,7 +123,7 @@ def sign_in():
             time.sleep(1)
     # 获取收藏夹地址
     global coll
-    coll = '//*[@id="__next"]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(nft_coll) + ']/a'
+    coll = '/html/body/div[1]/div[1]/main/div/div/section/div/div/div[1]/div[' + str(nft_coll) + ']/a'
     check_coll()
     global add_item_url
     coll_url = driver.find_elements_by_xpath(coll)
@@ -454,6 +454,8 @@ def nft():
                 error_check()
             finally:
                 if error_condition == 0:
+                    step_check()
+                elif nft_slice == 9:
                     step_check()
 
         this_times += 1
