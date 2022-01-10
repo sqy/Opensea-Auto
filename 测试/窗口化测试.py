@@ -1,6 +1,10 @@
 import tkinter as tk
+
+# 第1步，实例化object，建立窗口window
 window = tk.Tk()
-window.title('my window')
+
+# 第2步，给窗口的可视化起名字
+window.title("Welcome to sqy'code ")
 window.geometry('300x100')
 
 l = tk.Label(window,
