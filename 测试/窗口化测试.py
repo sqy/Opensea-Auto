@@ -7,7 +7,7 @@ window = tk.Tk()
 window.title("Welcome to sqy'code ")
 
 # 第3步，设定窗口的大小(长 * 宽)
-window.geometry('500x900')
+window.geometry('520x900')
 
 # 第4步，定义触发函数功能
 # 菜单File,New功能
@@ -30,6 +30,13 @@ def func_menu_chinese():
         filemenu.entryconfig(index='Open', label='打开')
         filemenu.entryconfig(index='Save', label='保存')
         filemenu.entryconfig(index='Exit', label='退出')
+        label_chrome_path.set(r'Chrome浏览器个人资料路径 :')
+        label_coll_name.set(r'收藏夹名称 :')
+        label_nft_name.set(r'NFT 名称 :')
+        label_nft_number.set(r'NFT 编号 :')
+        label_add_number.set(r'每上架一个NFT，编号加1')
+        label_name_suffix.set(r'将编号作为NFT名称后缀')
+        label_nft_price.set(r'NFT 价格(ETH) :')
     except:
         pass
 
@@ -41,8 +48,18 @@ def func_menu_english():
         filemenu.entryconfig(index='打开', label='Open')
         filemenu.entryconfig(index='保存', label='Save')
         filemenu.entryconfig(index='退出', label='Exit')
+        label_chrome_path.set(r'Chrome Profile path :')
+        label_coll_name.set(r'Collection Name :')
+        label_nft_name.set(r'NFT Name :')
+        label_nft_number.set(r'NFT Number :')
+        label_add_number.set(r'Increased by one for each NFT')
+        label_name_suffix.set(r'Add number to NFT name as suffix')
+        label_nft_price.set(r'NFT Price(ETH) :')
     except:
         pass
+# Metamask钱包密码，自己输入
+def func_password_choice():
+    print("I'm writing")
 
 # NFT编号，编号自动增加
 def func_add_number():
@@ -80,40 +97,67 @@ langmenu.add_command(label='English', command=func_menu_english)
 window.config(menu=menubar)
 
 # 第6步，浏览器相关信息
+label_chrome_path = tk.StringVar()
+label_chrome_path.set(r'Chrome Profile path :')
 tk.Label(window, text='*', font=('Arial', 12)).place(x=10, y=200)
-tk.Label(window, text='Chrome Profile path :', font=('Arial', 12)).place(x=20, y=200)
+tk.Label(window, textvariable=label_chrome_path, font=('Arial', 12)).place(x=20, y=200)
 var_chrome_path = tk.StringVar()
-entry_chrome_path = tk.Entry(window, textvariable=var_chrome_path, font=('Arial', 12)).place(x=10, y=230, width=430)
+var_chrome_path.set(r'C:/Users/Suqing/AppData/Local/Google/Chrome/User Data/')
+entry_chrome_path = tk.Entry(window, textvariable=var_chrome_path, font=('Arial', 12)).place(x=10, y=230, width=480)
 
-# 第6步，NFT相关信息
 # 定义初始坐标
 x0, y0 = 10, 350
 
+# 第7步，钱包密码相关信息
+label_metamask_password = tk.StringVar()
+label_metamask_password.set(r'Metamask Password :')
+tk.Label(window, text='*', font=('Arial', 12)).place(x=x0, y=y0-90)
+tk.Label(window, textvariable=label_metamask_password, font=('Arial', 12)).place(x=x0+10, y=y0-90)
+var_metamask_password = tk.StringVar()
+entry_metamask_password = tk.Entry(window, textvariable=var_metamask_password, font=('Arial', 12)).place(x=x0, y=y0-60, width=480)
+label_password_choice = tk.StringVar()
+label_password_choice.set(r'Enter the password by myself')
+var_password_choice = tk.IntVar()  # 定义变量用来存放选择行为返回值
+button_password_choice = tk.Checkbutton(window, textvariable=label_password_choice, variable=var_password_choice, onvalue=1, offvalue=0, command=func_password_choice).place(x=x0+250, y=y0-90)    # 传值原理类似于radiobutton部件
+
+# 第8步，NFT相关信息
 # 收藏夹名称
+label_coll_name = tk.StringVar()
+label_coll_name.set(r'Collection Name :')
 tk.Label(window, text='*', font=('Arial', 12)).place(x=x0, y=y0)
-tk.Label(window, text='Collection Name :', font=('Arial', 12)).place(x=x0+10, y=y0)
+tk.Label(window, textvariable=label_coll_name, font=('Arial', 12)).place(x=x0+10, y=y0)
 var_coll_name = tk.StringVar()
-entry_coll_name = tk.Entry(window, textvariable=var_coll_name, font=('Arial', 12)).place(x=x0+150, y=y0, width=300)
+entry_coll_name = tk.Entry(window, textvariable=var_coll_name, font=('Arial', 12)).place(x=x0+150, y=y0, width=330)
 
 # NFT名称
+label_nft_name = tk.StringVar()
+label_nft_name.set(r'NFT Name :')
 tk.Label(window, text='*', font=('Arial', 12)).place(x=x0, y=y0+40)
-tk.Label(window, text='NFT Name :', font=('Arial', 12)).place(x=x0+10, y=y0+40)
+tk.Label(window, textvariable=label_nft_name, font=('Arial', 12)).place(x=x0+10, y=y0+40)
 var_nft_name = tk.StringVar()
-entry_nft_name = tk.Entry(window, textvariable=var_nft_name, font=('Arial', 12)).place(x=x0+150, y=y0+40, width=300)
+entry_nft_name = tk.Entry(window, textvariable=var_nft_name, font=('Arial', 12)).place(x=x0+150, y=y0+40, width=330)
 
 # NFT编号
-tk.Label(window, text='NFT Number :', font=('Arial', 12)).place(x=x0+10, y=y0+80)
+label_nft_number = tk.StringVar()
+label_nft_number.set(r'NFT Number :')
+tk.Label(window, textvariable=label_nft_number, font=('Arial', 12)).place(x=x0+10, y=y0+80)
 var_nft_number = tk.StringVar()
 entry_nft_number = tk.Entry(window, textvariable=var_nft_number, font=('Arial', 12)).place(x=x0+150, y=y0+80, width=100)
 # 定义两个Checkbutton选项并放置
-var_add_number = tk.IntVar()  # 定义var1和var2整型变量用来存放选择行为返回值
-var_name_suffix = tk.IntVar()
-button_add_number = tk.Checkbutton(window, text='Increased by one for each NFT', variable=var_add_number, onvalue=1, offvalue=0, command=func_add_number).place(x=x0+250, y=y0+70)    # 传值原理类似于radiobutton部件
-button_name_suffix = tk.Checkbutton(window, text='Add number to NFT name as suffix', variable=var_name_suffix, onvalue=1, offvalue=0, command=func_name_suffix).place(x=x0+250, y=y0+90)
+label_add_number = tk.StringVar()
+label_name_suffix = tk.StringVar()
+label_add_number.set(r'Increased by one for each NFT')
+label_name_suffix.set(r'Add number to NFT name as suffix')
+var_add_number = tk.IntVar()  # 定义变量用来存放选择行为返回值
+var_name_suffix = tk.IntVar()  # 定义变量用来存放选择行为返回值
+button_add_number = tk.Checkbutton(window, textvariable=label_add_number, variable=var_add_number, onvalue=1, offvalue=0, command=func_add_number).place(x=x0+250, y=y0+70)    # 传值原理类似于radiobutton部件
+button_name_suffix = tk.Checkbutton(window, textvariable=label_name_suffix, variable=var_name_suffix, onvalue=1, offvalue=0, command=func_name_suffix).place(x=x0+250, y=y0+90)
 
 # NFT价格
+label_nft_price = tk.StringVar()
+label_nft_price.set(r'NFT Price(ETH) :')
 tk.Label(window, text='*', font=('Arial', 12)).place(x=x0, y=y0+120)
-tk.Label(window, text='NFT Price(ETH) :', font=('Arial', 12)).place(x=x0+10, y=y0+120)
+tk.Label(window, textvariable=label_nft_price, font=('Arial', 12)).place(x=x0+10, y=y0+120)
 var_nft_price = tk.StringVar()
 entry_nft_price = tk.Entry(window, textvariable=var_nft_price, font=('Arial', 12)).place(x=x0+150, y=y0+120, width=100)
 
