@@ -29,7 +29,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
-  <component name="RunManager" selected="Python.窗口化测试">
+  <component name="RunManager" selected="Python.窗口化测试 - 副本">
     <configuration name="窗口化测试 - 副本" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Opensea-Auto" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -158,8 +158,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.窗口化测试" />
         <item itemvalue="Python.窗口化测试 - 副本" />
+        <item itemvalue="Python.窗口化测试" />
         <item itemvalue="Python.test (1)" />
         <item itemvalue="Python.opensea_auto - 刀片结构" />
         <item itemvalue="Python.[005][TreeF]Concentric Tree" />

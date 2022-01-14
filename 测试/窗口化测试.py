@@ -84,6 +84,7 @@ def func_number():
     if var_no_number.get() == 1:
         button_add_number.deselect()
         button_name_suffix.deselect()
+        var_nft_number.set('')
         entry_nft_number.config(state='disable')
     else:
         entry_nft_number.config(state='normal')
@@ -95,7 +96,10 @@ def func_number():
 def func_start():
     print("I'm writing")
 
-# func_
+# 链选择
+def func_blockchain():
+    print("I'm writing")
+
 # 第5步，创建菜单栏
 menubar = tk.Menu(window)
 # 创建一个File菜单项
@@ -211,11 +215,23 @@ label_enter_password = tk.StringVar()
 label_enter_password.set(r'Entered Password')
 button_enter_password = tk.Button(tag1, textvariable=label_enter_password, font=('Arial', 15), width=20, height=1, command=func_start).place(x=tag1_x0+220, y=tag1_y0+200)
 
-# 创建第一页框架，可选操作
+# 创建第二页框架，可选操作
 tag2 = tk.Frame(tag_main)
 tag2.place(x=0, y=0)
 tag_main.add(tag2, text='More options')
-tk.Label(tag2, text='Trying to write code', font=('Arial', 15)).pack()
-tk.Label(tag2, text='Please wait patiently', font=('Arial', 15)).pack()
+
+# 定义初始坐标
+tag2_x0, tag2_y0 = 10, 10
+
+label_blockchain = tk.StringVar()
+label_blockchain.set(r'Blockchain :')
+tk.Label(tag2, textvariable=label_blockchain, font=('Arial', 12)).place(x=tag2_x0+80, y=tag2_y0+20)
+var_blockchain = tk.StringVar()
+var_blockchain.set(r'Ethereum')
+button_blockchain_ethereum = tk.Radiobutton(tag2, text='Ethereum', variable=var_blockchain, value='Ethereum', command=func_blockchain).place(x=tag2_x0+210, y=tag2_y0+20)
+button_blockchain_polygon = tk.Radiobutton(tag2, text='Polygon', variable=var_blockchain, value='Polygon', command=func_blockchain).place(x=tag2_x0+310, y=tag2_y0+20)
+
+tk.Label(tag2, text='Trying to write code', font=('Arial', 15)).place(x=tag2_x0+170, y=tag2_y0+240)
+tk.Label(tag2, text='Please wait patiently', font=('Arial', 15)).place(x=tag2_x0+170, y=tag2_y0+270)
 
 window.mainloop()

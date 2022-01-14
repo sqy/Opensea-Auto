@@ -1,34 +1,39 @@
-import tkinter as tk  # 使用Tkinter前需要先导入
+# pickle模块主要函数的应用举例
+import pickle
+import pprint
 
-# 第1步，实例化object，建立窗口window
-window = tk.Tk()
+dataList = [[8, 1, 'python'],
+            [8, 1, 'python'],
+            [8, 0, 'python'],
+            [8, 1, 'C++'],
+            [8, 1, 'C++']]
+dataDic = {0: [1, 2, 3, 4],
+           1: ('a', 'b'),
+           2: {'c': 'yes', 'd': 'no'}}
+print("原始数据dataList：")
+pprint.pprint(dataList)
+print('\n')
+print("原始数据dataDic：")
+pprint.pprint(dataDic)
 
-# 第2步，给窗口的可视化起名字
-window.title('My Window')
+# 使用dump()将数据序列化到文件中
+fw = open('dataFile.txt', 'wb')
+# Pickle the list using the highest protocol available.
+pickle.dump(dataList, fw)
+# Pickle dictionary using protocol 0.
+pickle.dump(dataDic, fw)
+fw.close()
 
-# 第3步，设定窗口的大小(长 * 宽)
-window.geometry('500x300')  # 这里的乘是小x
+# 使用load()将数据从文件中序列化读出
+fr = open('dataFile.txt', 'rb')
+data1 = pickle.load(fr)
+print('\n'+"反序列化1：%r" % data1)
+data3 = pickle.load(fr)
+print("反序列化3：%r" % data3 + '\n')
+fr.close()
 
-# 第4步，在图形界面上创建一个标签label用以显示并放置
-l = tk.Label(window, bg='yellow', width=20, text='empty')
-l.pack()
-
-
-# 第6步，定义触发函数功能
-def print_selection():
-    if var1.get() == 1:  # 如果选中第一个选项，未选中第二个选项
-        l.config(text='I love only Python ')
-        c2.deselect()
-        print(var2.get())
-    elif var2.get() == 1:
-        print(var2.get())
-# 第5步，定义两个Checkbutton选项并放置
-var1 = tk.IntVar()  # 定义var1和var2整型变量用来存放选择行为返回值
-var2 = tk.IntVar()
-c1 = tk.Checkbutton(window, text='Python', variable=var1, onvalue=1, offvalue=0, command=print_selection)  # 传值原理类似于radiobutton部件
-c1.pack()
-c2 = tk.Checkbutton(window, text='C++', variable=var2, onvalue=1, offvalue=0, command=print_selection)
-c2.pack()
-
-# 第7步，主窗口循环显示
-window.mainloop()
+# 使用dumps()和loads()举例
+p = pickle.dumps(dataList)
+print(pickle.loads(p))
+p = pickle.dumps(dataDic)
+print(pickle.loads(p))
