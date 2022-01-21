@@ -1,0 +1,17 @@
+# chromedriver未安装
+("'chromedriver' executable needs to be in PATH. Please see https://sites.google.com/a/chromium.org/chromedriver/home",)
+Message: 'chromedriver' executable needs to be in PATH. Please see https://sites.google.com/a/chromium.org/chromedriver/home
+WebDriverException("'chromedriver' executable needs to be in PATH. Please see https://sites.google.com/a/chromium.org/chromedriver/home")
+
+# chromedriver需更新
+('session not created: This version of ChromeDriver only supports Chrome version 88\nCurrent browser version is 95.0.4638.69 with binary path C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', None, None)
+Message: session not created: This version of ChromeDriver only supports Chrome version 88
+Current browser version is 95.0.4638.69 with binary path C:\Program Files\Google\Chrome\Application\chrome.exe
+SessionNotCreatedException('session not created: This version of ChromeDriver only supports Chrome version 88\nCurrent browser version is 95.0.4638.69 with binary path C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', None, None)
+
+# 开两个Chrome
+("unknown error: Chrome failed to start: crashed.\n  (unknown error: DevToolsActivePort file doesn't exist)\n  (The process started from chrome location C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.)", None, None)
+Message: unknown error: Chrome failed to start: crashed.
+  (unknown error: DevToolsActivePort file doesn't exist)
+  (The process started from chrome location C:\Program Files\Google\Chrome\Application\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.)
+WebDriverException("unknown error: Chrome failed to start: crashed.\n  (unknown error: DevToolsActivePort file doesn't exist)\n  (The process started from chrome location C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.)", None, None)
