@@ -7,6 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from PIL import Image  # 引入pillow模块
 import xlrd   # 引入Excel读取模块
 from xlutils.copy import copy  # 导入copy模块
+import random
 import sys
 import time
 import os
@@ -32,8 +33,13 @@ var_nft_price = datalist_rb[12]
 var_first = datalist_rb[13]
 var_blockchain = datalist_rb[14]
 
+# 切换页面
+def switch_window(number):
+    global handles
+    handles = driver.window_handles  # 获取当前页面所有的句柄
+    driver.switch_to.window(handles[number])
+
 # 配置Chrome浏览器参数
-url_coll = "https://opensea.io/collections"
 option = webdriver.ChromeOptions()
 option.add_argument("--user-data-dir=" + var_chrome_path)  # 加载Chrome全部插件
 option.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
@@ -71,9 +77,11 @@ except Exception as e:
     sys.exit()  # 终止代码
 
 sign_slice = 1
+sys_exit = 0
 # 登录部分
 class Sign:
     def __init__(self):
+        print('slice=',sign_slice)
         if sign_slice == 1:
             self.check_zoom_level()
         if sign_slice == 2:
@@ -87,16 +95,28 @@ class Sign:
 
     #  第1步，检测浏览器缩放比例
     def check_zoom_level(self):
-        global zoom_level
+        global zoom_level, sys_exit
         zoom_level = driver.execute_script('return (window.outerWidth/window.innerWidth)')
+        # 浏览器缩放比例不为100%时发出提示并结束进程
+        if zoom_level != 1:
+            if var_language == 'chinese':
+                tkinter.messagebox.showerror(title='', message='请调整浏览器缩放比例为100%后重新启动！')
+            if var_language == 'english':
+                tkinter.messagebox.showerror(title='', message='Please adjust the browser zoom to 100% and restart!')
+            # 结束进程
+            sys_exit = 1
 
     #  第2步，跳转opensea收藏夹页面
     def get_url(self):
+        coll = ['treer-freshness-in-memory', 'treef-concentric-tree', 'worda-chinese-characters', 'coder-random-regular-polygon', 'treer-falling-cherry-blossoms', 'mat-comic',
+                'stars-starry-starry-heights']
+        url_coll = "https://opensea.io/collection/" + random.choice(coll)
         driver.get(url_coll)
 
     #  第3步，未自动跳转登录界面，点击用户来跳转登录界面
     def click_account(self):
         driver.find_element_by_xpath(xpath_button_account).click()  # 点击用户以进入登录界面
+        time.sleep(3)
 
     #  第4步，钱包选择
     def wallet_select(self):
@@ -108,16 +128,46 @@ class Sign:
 
     #  第5步，输入密码
     def enter_password(self):
-        print('enter password')
+        while True:
+            try:
+                switch_window(1)  # 切换至弹出页面
+                print(handles)
+                driver.find_element_by_id("password").send_keys(var_metamask_password)  # 输入密码
+                time.sleep(180)
+                driver.find_element_by_xpath(button_unlock).click()  # 点击解锁
+                switch_window(0)  # 切换回主页面
+                break
+            except:
+                time.sleep(1)
 
 def step_sign():
-    global sign_slice
+    global sign_slice, sys_exit
     if sign_slice == 2:
         try:
-            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_button_wallet)))  # 等待钱包选择按键
-
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_text_coll)))
+    elif  sign_slice == 3:
+        try:
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_text_wallet)))  # 等待钱包选择页面，Text:You need an Ethereum wallet to use OpenSea./Connect your wallet.
+            time.sleep(3)
+            if 'You need an Ethereum wallet' in driver.find_element_by_xpath(xpath_text_wallet).text:
+                if sign_slice == 3:
+                    if var_language == 'chinese':
+                        tkinter.messagebox.showerror(title='', message=r'请安装Metamask钱包插件或检查Chrome浏览器个人资料路径！')
+                    if var_language == 'english':
+                        tkinter.messagebox.showerror(title='', message=r'Please install metamask wallet plug-in or check Chrome Profile path!')
+                    # 结束进程
+                    sys_exit = 1
+                sign_slice = 3
+                print('find You need an Ethereum wallet')
+            elif 'Connect your wallet' in driver.find_element_by_xpath(xpath_text_wallet).text:
+                sign_slice = 4
+                print('find Connect your wallet')
+        except:
+            print('no find')
+            driver.refresh()
     else:
-        sign_slice = sign_slice +1
+        sign_slice = sign_slice + 1
+    print('+slice=', sign_slice)
 
 def check_sign_error():
     print(r"I'm writing")
@@ -126,21 +176,17 @@ def sign_in():
     while sign_slice < 6:
         try:
             Sign()  # 登录操作步骤
-            # sign_slice第1步，浏览器缩放比例不为100%时发出提示并结束循环
-            if zoom_level != 1:
-                if var_language == 'chinese':
-                    tkinter.messagebox.showerror(title='', message='请调整浏览器缩放比例为100%后重新启动！')
-                if var_language == 'english':
-                    tkinter.messagebox.showerror(title='', message='Please adjust the browser zoom to 100% and restart!')
+            # 结束循环
+            if sys_exit == 1:
                 break
+            # 完成每步操作后对情况判定
             step_sign()
         except:
             check_sign_error()
-    # sign_slice第1步，浏览器缩放比例不为100%时，在结束循环后终止代码
-    if zoom_level != 1:
+    # 在结束循环后终止代码
+    if sys_exit == 1:
         sys.exit()  # 终止代码
-sign_in()
-print('1')
+
 # 登录
 def open_web():
     driver.get(url_coll)  # 设置打开网页
@@ -187,12 +233,15 @@ def sign_in123():
             time.sleep(1)
 
 if __name__ == "__main__":
-    global xpath_button_account, xpath_button_wallet
+    global xpath_button_account, xpath_text_coll, xpath_text_wallet, button_unlock
     xpath_button_account = '/html/body/div[1]/div[1]/div[1]/nav/ul/div/div/li/a'
-    xpath_button_wallet = '/html/body/div[1]/div[1]/main/div/div/div/div[2]/ul/li[1]/button'
+    xpath_text_coll = '/html/body/div[1]/div/main/div/div/div[2]/div[2]/div[3]/h2'
+    xpath_text_wallet = '/html/body/div[1]/div/main/div/div/h1'
+    button_unlock = '/html/body/div[1]/div/div[2]/div/div/button'
+
     global sign_in_button, sign_in_unlock, sign_in_unlock2, opensea_path, metamask_sign, metamask_sign2
     sign_in_button = '//*[@id="__next"]/div[1]/main/div/div/div/div[2]/ul/li[1]/button'
-    sign_in_unlock = '/html/body/div[1]/div/div[3]/div/div/button'
+
     sign_in_unlock2 = '/html/body/div[1]/div/div[2]/div/div/button'
     opensea_path = '//*[@id="__next"]/div[1]/div[1]/nav/div[1]/a'
     metamask_sign = '/html/body/div[1]/div/div[2]/div/div[3]/button[2]'
@@ -218,4 +267,5 @@ if __name__ == "__main__":
     listitem_path = '/html/body/div[4]/div/div/div/header/h4'
     viewitem_path = '/html/body/div[4]/div/div/div/footer/a'
 
-    nft()
+    sign_in()
+    print('111')

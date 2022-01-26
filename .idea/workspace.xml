@@ -29,7 +29,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
-  <component name="RunManager" selected="Python.plistcode">
+  <component name="RunManager" selected="Python.test">
     <configuration name="窗口化示例" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Opensea-Auto" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -158,9 +158,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.plistcode" />
         <item itemvalue="Python.opensea_auto - 窗口版" />
-        <item itemvalue="Python.test" />
         <item itemvalue="Python.test - 副本 (1)" />
         <item itemvalue="Python.test - 副本" />
       </list>
