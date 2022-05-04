@@ -1,2 +1,6 @@
-def fuck():
-    driver.get(url_coll)
+def a():
+    print(b)
+
+b = 1
+
+a()
