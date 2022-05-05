@@ -193,6 +193,7 @@ class Sign:
                 driver.find_element_by_id("password").send_keys(var_metamask_password)  # 输入密码
                 time.sleep(1)
                 driver.find_element_by_xpath(xpath_button_unlock).click()  # 点击解锁
+                time.sleep(5)
                 switch_window(0)  # 切换回主页面
                 sign_slice = "finish"
                 break
@@ -235,6 +236,12 @@ class Upload:
         if upload_slice == 'get url coll':
             print('slice=', upload_slice)
             self.get_url_coll()
+        if upload_slice == 'get username coll':
+            print('slice=', upload_slice)
+            self.get_username_coll()
+        if upload_slice == 'get link coll':
+            print('slice=', upload_slice)
+            self.get_link_coll()
 
     #  第1步，是否能正常开始的基础判定
     def check_start(self):
@@ -246,18 +253,50 @@ class Upload:
             upload_slice = 'finish'
             print('Upload Error')
 
-    #  第2步，获取收藏夹地址
+    #  第2步，跳转收藏夹地址
     def get_url_coll(self):
         global upload_slice
         url_coll = 'https://opensea.io/collections'
         driver.get(url_coll)
+        upload_slice = 'get username coll'
+
+    #  第3步，获取收藏夹用户名
+    def get_username_coll(self):
+        global upload_slice
         try:
             WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_first_coll_by_who)))
-            text = get_text(xpath_first_coll_by_who)
-            print(text)
-            upload_slice = 'finish'
+            username = get_text(xpath_first_coll_by_who)
+            if username == 'you':
+                upload_slice = 'get link coll'
+            else:
+                driver.refresh()
+                time.sleep(10)
         except:
-            print('get url coll Error')
+            upload_slice = 'get url coll'
+            print('get username coll Error')
+
+    #  第4步，获取收藏夹链接  ## 如果收藏夹未加载，将获取失败，目前获取12个收藏夹
+    def get_link_coll(self):
+        global upload_slice
+        print('var_coll_name = ', var_coll_name)
+        for i in range(1, 100):
+            xpath_coll_name = '/html/body/div[1]/div/main/div/div/section/div/div/div[1]/div[{}]/a/div[2]/div[3]/div'.format(i)
+            try:
+                collname = get_text(xpath_coll_name)
+                if collname == var_coll_name:
+                    xpath_coll_link = '/html/body/div[1]/div/main/div/div/section/div/div/div[1]/div[{}]/a'.format(i)
+                    temp_url = driver.find_elements_by_xpath(xpath_coll_link)
+                    for get_url in temp_url:
+                        finish_url = str(get_url.get_attribute("href"))
+                    create_url = '{}/assets/create'.format(finish_url)
+                    driver.get(create_url)
+                    upload_slice = 'finish'
+                    break
+            except:
+                print('Not find the name of collection')
+                break
+
+
 
 
 # 元素地址
@@ -269,7 +308,7 @@ xpath_text_wallet = '/html/body/div[1]/div/main/div/div/h1'
 xpath_button_unlock = '/html/body/div[1]/div/div[2]/div/div/button'
 
 #
-global xpath_logo_opensea
+global xpath_logo_opensea, xpath_first_coll_by_who
 xpath_logo_opensea = '/html/body/div[1]/div/div[1]/nav/div[1]/a'
 xpath_first_coll_by_who = '/html/body/div[1]/div/main/div/div/section/div/div/div[1]/div[1]/a/div[2]/div[4]/div/a/span'
 
@@ -301,14 +340,6 @@ plist_path = '/html/body/div[1]/div[1]/main/div/div/div[3]/div/div[2]/div/div[1]
 listitem_path = '/html/body/div[4]/div/div/div/header/h4'
 viewitem_path = '/html/body/div[4]/div/div/div/footer/a'
 
-def upload_item():
-    # 上传操作
-    while upload_slice != "finish":
-        try:
-            Upload()  # 上传操作步骤
-        except:
-            print("upload_slice=", upload_slice, ", Upload Error")
-
 # 主程序
 if __name__ == "__main__":
     # 成功启动浏览器，配置参数
@@ -325,5 +356,10 @@ if __name__ == "__main__":
     # 成功登录，配置参数
     global upload_slice
     upload_slice = 'start'
-    upload_item()
+    while upload_slice != "finish":
+        try:
+            Upload()  # 上传操作步骤
+        except:
+            print("upload_slice=", upload_slice, ", Upload Error")
+
     print('finish')
