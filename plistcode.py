@@ -301,7 +301,7 @@ class Upload_prepare:
                     xpath_coll_link = '/html/body/div[1]/div/main/div/div/section/div/div/div[1]/div[{}]/a'.format(i)  # 拼装收藏夹链接元素地址
                     temp_url = get_href(xpath_coll_link)  # 获取元素链接
                     create_url = '{}/assets/create'.format(temp_url)  # 增加对应收藏夹Add Item页面链接的后缀
-                    driver.get(create_url)  # 跳转Add Item界面
+                    print(create_url)
                     upload_prepare_slice = 'get item path'
                     break
             except:
@@ -351,17 +351,27 @@ class Fill:
 
     #  第1步，上传项目
     def upload_item(self, path_item):
-        global fill_slice
+        global fill_slice, sign_slice
+        driver.get(create_url)  # 跳转Add Item界面
         try:
-            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_item_input)))  # 新步骤基础判定元素是否存在
+            WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_input_item)))  # 新步骤基础判定元素是否存在
             print('Find item input')
-            driver.find_element_by_xpath(xpath_item_input).send_keys(path_item)  # 上传Item
+            driver.find_element_by_xpath(xpath_input_item).send_keys(path_item)  # 上传Item
             fill_slice = 'item name'  # 进行下一步
         except:
             print('upload_item Error')
-            driver.get(create_url)  # 跳转Add Item界面
-            time.sleep(1)
-            try_sign(1)
+            # 未签名，直接跳转create界面，可能跳转至钱包选择页面（待可行性测试）
+            try:
+                WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.XPATH, xpath_button_account)))  # 至少等待一个账户按钮显示
+                print('跳转至钱包选择界面')
+                step_sign = Sign()
+                step_sign.wallet_select()
+                sign_slice = 'wallet check'
+                try_sign(10)
+            except:
+                driver.get(create_url)  # 跳转Add Item界面
+                time.sleep(1)
+                try_sign(1)
 
     #  第2步，填入名称  ## 名称拼装功能及判定，以及全部完成后写入pickle功能
     def item_name(self):
@@ -404,41 +414,44 @@ class Fill:
         global fill_slice
         print("I'll write code")
 
-    #  第9步，块链选择
+    #  第9步，块链选择，var_blockchain目前有'Ethereum'和'Polygon'
     def item_blockchain(self):
         global fill_slice
-        # var_blockchain目前有'Ethereum'和'Polygon'
-        driver.execute_script("window.scrollTo(0,1800);")  # 拖滚动条下移，防止界面找不到元素
-        element = driver.find_element_by_xpath('/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[2]/input')
+        driver.execute_script("window.scrollTo(0,1600);")  # 拖滚动条下移，防止界面找不到元素
+        # 选择块链
+        element = driver.find_element_by_xpath(xpath_blockchain_logo)
         var_element = element.get_attribute('value')
         if var_blockchain == var_element:
-            print('The blockchain is same')
-            time.sleep(1200)
+            pass  # 默认块链正确，无须其它操作
         else:
-            print('Fuck')
             # 展开选项
-            xpath_blockchain_showmore = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[2]/div[2]/i'
             driver.find_element_by_xpath(xpath_blockchain_showmore).click()
             # 匹配选项
-            xpath_blockchain_logo1 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[3]/div/div/div/ul/li[1]/button/div[2]/span[1]'  # logo1
-            xpath_blockchain_logo2 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[3]/div/div/div/ul/li[2]/button/div[2]/span[1]'  # logo2
-            xpath_blockchain_logo3 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[3]/div/div/div/ul/li[3]/button/div[2]/span[1]'  # logo3
             if var_blockchain == get_text(xpath_blockchain_logo1):
                 driver.find_element_by_xpath(xpath_blockchain_logo1).click()
             elif var_blockchain == get_text(xpath_blockchain_logo2):
                 driver.find_element_by_xpath(xpath_blockchain_logo2).click()
             elif var_blockchain == get_text(xpath_blockchain_logo3):
                 driver.find_element_by_xpath(xpath_blockchain_logo3).click()
-            time.sleep(1200)
-
-
-
+        if var_blockchain == 'Polygon':  ## 测试是否存在选择块链过快问题
+            driver.find_element_by_xpath(xpath_input_supply).send_keys(Keys.CONTROL + 'a')  # 全选
+            driver.find_element_by_xpath(xpath_input_supply).send_keys(Keys.DELETE)  # 删除，清空
+            driver.find_element_by_xpath(xpath_input_supply).send_keys(int(var_supply))
+        fill_slice = 'item create'
 
     #  第10步，点击创建和判定
     def item_create(self):
         global fill_slice
-        print("I'll write code")
-
+        driver.execute_script("window.scrollTo(0,2000);")  # 拖滚动条下移，防止界面找不到元素
+        driver.find_element_by_xpath(xpath_button_create).click()
+        time.sleep(1200)
+        ### 死于人机验证
+        # 错误集合
+        ## [500] Error occurred while processing your request. Please try again later. Error id: 4d4f66d2a50f426eb456d18c3cedc587
+        xpath_text_create_error1 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[9]/div[2]/span/ul/li/text()'
+        ## ['You have reached the max number of items in this collection.']
+        xpath_text_create_error2 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[9]/div[2]/span/ul/li'
+        fill_slice = 'finish'
 
 # 元素地址
 # 登录界面
@@ -461,17 +474,29 @@ metamask_sign = '/html/body/div[1]/div/div[2]/div/div[3]/button[2]'
 metamask_sign2 = '/html/body/div[1]/div/div[3]/div/div[3]/button[2]'
 
 # Add Item界面
-global xpath_item_input, names_path, descs_path, prop_switch_path, prop_type_path, prop_name_path, prop_save_path, lockcontent_switch_path, lockcontent_path, create_path
-xpath_item_input = '//*[@id="media"]'
-names_path = '//*[@id="name"]'
-descs_path = '//*[@id="description"]'
+global xpath_input_item, names_path, descs_path, prop_switch_path, prop_type_path, prop_name_path, prop_save_path, lockcontent_switch_path, lockcontent_path
+xpath_input_item = '//*[@id="media"]'
+names_path = '//*[@id="name"]'  ## 还没处理
+descs_path = '//*[@id="description"]'  ## 还没处理
+# Properties  ## 还没处理
 prop_switch_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section/div[1]/div/div[2]/button'
 prop_type_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[1]/div/div/input'
 prop_name_path = '/html/body/div[2]/div/div/div/section/table/tbody/tr/td[2]/div/div/input'
 prop_save_path = '/html/body/div[2]/div/div/div/footer/button'
+# Unlockable content  ## 还没处理
 lockcontent_switch_path = '//*[@id="unlockable-content-toggle"]'
 lockcontent_path = '//*[@id="__next"]/div[1]/main/div/div/section/div[2]/form/section/div[4]/div[2]/textarea'
-create_path = '/html/body/div[1]/div[1]/main/div/div/section/div[2]/form/div[9]/div[1]/span/button'
+global xpath_blockchain_logo, xpath_blockchain_showmore, xpath_blockchain_logo1, xpath_blockchain_logo2, xpath_blockchain_logo3, xpath_input_supply
+# Blockchain
+xpath_blockchain_logo = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[2]/input'  # logo
+xpath_blockchain_showmore = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[2]/div[2]/i'  # showmore blockchain
+xpath_blockchain_logo1 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[3]/div/div/div/ul/li[1]/button/div[2]/span[1]'  # logo1
+xpath_blockchain_logo2 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[3]/div/div/div/ul/li[2]/button/div[2]/span[1]'  # logo2
+xpath_blockchain_logo3 = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[7]/div/div[3]/div/div/div/ul/li[3]/button/div[2]/span[1]'  # logo3
+xpath_input_supply = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[6]/div/div[2]/div/input'  # Supply输入框
+# Create
+global xpath_button_create
+xpath_button_create = '/html/body/div[1]/div/main/div/div/section/div[2]/form/div[9]/div[1]/span/button'
 
 global created_close_path, sellbutton_text, lowerprice_path
 created_close_path = '/html/body/div[5]/div/div/div/div[2]/button/i'  # 确定用link_text 'close' 无效
@@ -516,10 +541,10 @@ if __name__ == "__main__":
     
     # 准备完成，配置参数
     global fill_slice, path_items
-    fill_slice = 'upload item'
     
     # 填入内容
     for i in path_items:
+        fill_slice = 'upload item'
         while True:
             try:
                 if fill_slice == 'finish':
