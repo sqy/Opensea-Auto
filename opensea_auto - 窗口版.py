@@ -29,6 +29,8 @@ def func_menu_new():
     var_no_number.set('1')
     var_nft_price.set('')
     var_first.set('0')
+    var_blockchain.set('Ethereum')
+    var_supply.set('1')
 
 # 菜单File,Save功能
 def func_menu_save():
@@ -47,7 +49,9 @@ def func_menu_save():
                 var_no_number.get(),
                 var_nft_price.get(),
                 var_first.get(),
-                var_blockchain.get()]
+                var_blockchain.get(),
+                var_supply.get()
+                   ]
     pickle.dump(datalist_wb, filehandle)
     filehandle.close()
 
@@ -151,7 +155,71 @@ def func_number():
             print("I'm writing")
 # 开始按键
 def func_start():
-    print("I'm writing")
+    # 默认状态为可开始
+    var_start = 1
+    # 对NFT编号判定
+    nft_number = var_nft_number.get()
+    if nft_number == '':  # 如果nft_number为空
+        var_no_number.set('1')
+        var_add_number.set('0')
+        var_name_suffix.set('0')
+    else:  # 如果nft_number不为空
+        try:
+            nft_number = int(nft_number)  # 尝试把nft_number数据定义为整数
+        except:  # NFT编号不为整数的，清空输入框，并提示
+            var_nft_number.set('')
+            var_add_number.set('0')
+            var_name_suffix.set('0')
+            if var_language == 'chinese':
+                tkinter.messagebox.showerror(title='', message=r'NFT编号 请填写整数！')
+            elif var_language == 'english':
+                tkinter.messagebox.showerror(title='', message=r'Please enter an integer in NFT Number!')
+
+    # 对NFT价格判定
+    nft_price = var_nft_price.get()
+    if nft_price == '':  # 如果nft_price为空
+        var_start = 0  # 无价格不能开始
+        if var_language == 'chinese':
+            tkinter.messagebox.showerror(title='', message=r'请填写NFT价格！')
+        elif var_language == 'english':
+            tkinter.messagebox.showerror(title='', message=r'Please enter a number in NFT Price!')
+    else:  # 如果nft_price不为空
+        try:
+            nft_price = float(var_nft_price.get())  # 尝试把nft_price数据定义为浮点数
+        except:
+            var_start = 0  # 价格不为数字不能开始
+            var_nft_price.set('')
+            if var_language == 'chinese':
+                tkinter.messagebox.showerror(title='', message=r'NFT价格 请填写数字！')
+            elif var_language == 'english':
+                tkinter.messagebox.showerror(title='', message=r'Please enter a number in NFT Price!')
+
+    # 对块链和Supply判定
+    if var_blockchain.get() == 'Polygon':
+        try:
+            nft_supply = int(var_supply.get())  # 尝试把Supply数据定义为整数
+            if nft_supply < 1:
+                var_start = 0  # Supply不为数字不能开始
+                var_supply.set('1')
+                if var_language == 'chinese':
+                    tkinter.messagebox.showerror(title='', message=r'Supply 最小为1，自动修改为默认”1“！')
+                elif var_language == 'english':
+                    tkinter.messagebox.showerror(title='', message=r'The number of Supply must be 1 or greater !')
+        except:
+            var_start = 0  # Supply不为数字不能开始
+            var_supply.set('1')
+            if var_language == 'chinese':
+                tkinter.messagebox.showerror(title='', message=r'Supply 请填写整数，自动修改为默认”1“！')
+            elif var_language == 'english':
+                tkinter.messagebox.showerror(title='', message=r'Please enter a integer in Supply!')
+
+    # 开始前自动保存数据
+    func_menu_save()
+    # 开始程序
+    if var_start == 1:
+        print('start code')
+    else:
+        print('start failed')
 
 # 第一次使用
 def func_first():
@@ -168,7 +236,13 @@ def func_first():
 
 # 链选择
 def func_blockchain():
-    print("I'm writing")
+    if var_blockchain.get() == 'Ethereum':
+        var_supply.set('1')
+        entry_supply.config(state='disable')
+    elif var_blockchain.get() == 'Polygon':
+        entry_supply.config(state='normal')
+        #button_blockchain_ethereum = tk.Radiobutton(tag2, text='Ethereum', variable=var_blockchain, value='Ethereum', command=func_blockchain).place(x=tag2_x0 + 210, y=tag2_y0 + 20)
+        #button_blockchain_polygon = tk.Radiobutton(tag2, text='Polygon', variable=var_blockchain, value='Polygon', command=func_blockchain).place(x=tag2_x0 + 310, y=tag2_y0 + 20)
 
 # 第5步，创建菜单栏
 menubar = tk.Menu(window)
@@ -254,7 +328,7 @@ tk.Label(tag1, textvariable=label_nft_name, font=('Arial', 12)).place(x=tag1_x0+
 var_nft_name = tk.StringVar()
 entry_nft_name = tk.Entry(tag1, textvariable=var_nft_name, font=('Arial', 12)).place(x=tag1_x0+150, y=tag1_y0+10+40, width=330)
 
-# NFT编号
+# NFT编号  ## 要改为编码仅能输入整数
 label_nft_number = tk.StringVar()
 label_nft_number.set(r'NFT Number :')
 tk.Label(tag1, textvariable=label_nft_number, font=('Arial', 12)).place(x=tag1_x0+10, y=tag1_y0+10+80)
@@ -280,7 +354,7 @@ var_no_number.set(1)
 button_no_number = tk.Checkbutton(tag1, textvariable=label_no_number, variable=var_no_number, onvalue=1, offvalue=0, command=func_number)    # 传值原理类似于radiobutton部件
 button_no_number.place(x=tag1_x0, y=tag1_y0+10+100)
 
-# NFT价格
+# NFT价格  ## 确定nft价格输入最大范围值，并仅能输入数字
 label_nft_price = tk.StringVar()
 label_nft_price.set(r'NFT Price(ETH) :')
 tk.Label(tag1, text='*', font=('Arial', 12)).place(x=tag1_x0, y=tag1_y0+10+140)
@@ -291,7 +365,7 @@ entry_nft_price = tk.Entry(tag1, textvariable=var_nft_price, font=('Arial', 12))
 # 开始按键
 label_start = tk.StringVar()
 label_start.set(r'Start')
-button_start = tk.Button(tag1, textvariable=label_start, font=('Arial', 15), width=10, height=1, command=func_start).place(x=tag1_x0+60, y=tag1_y0+10+200)
+button_start = tk.Button(tag1, textvariable=label_start, font=('Arial', 17), width=10, height=1, command=func_start).place(x=tag1_x0+60, y=tag1_y0+10+200)
 #label_enter_password = tk.StringVar()
 #label_enter_password.set(r'Entered Password')
 #button_enter_password = tk.Button(tag1, textvariable=label_enter_password, font=('Arial', 15), width=20, height=1, command=func_start, state='disable')
@@ -306,11 +380,11 @@ button_first.place(x=tag1_x0+50, y=tag1_y0+10+250)
 label_first_color = tk.StringVar()
 label_first2 = tk.StringVar()
 label_first2.set(r"When the select wallet page appears in the browser,")
-lab_first2 = tk.Label(tag1, textvariable=label_first2, font=('Arial', 13), fg='#F0F0F0')
+lab_first2 = tk.Label(tag1, textvariable=label_first2, font=('Arial', 12), fg='#F0F0F0')
 lab_first2.place(x=tag1_x0+50, y=tag1_y0+10+280)
 label_first3 = tk.StringVar()
 label_first3.set(r"the user needs to log in and enter Wallet Seed.")
-lab_first3 = tk.Label(tag1, textvariable=label_first3, font=('Arial', 13), fg='#F0F0F0')
+lab_first3 = tk.Label(tag1, textvariable=label_first3, font=('Arial', 12), fg='#F0F0F0')
 lab_first3.place(x=tag1_x0+50, y=tag1_y0+10+305)
 
 # 创建第二页框架，可选操作
@@ -321,6 +395,7 @@ tag_main.add(tag2, text='More options')
 # 定义初始坐标
 tag2_x0, tag2_y0 = 10, 10
 
+# 块链选择功能
 label_blockchain = tk.StringVar()
 label_blockchain.set(r'Blockchain :')
 tk.Label(tag2, textvariable=label_blockchain, font=('Arial', 12)).place(x=tag2_x0+80, y=tag2_y0+20)
@@ -328,6 +403,14 @@ var_blockchain = tk.StringVar()
 var_blockchain.set(r'Ethereum')
 button_blockchain_ethereum = tk.Radiobutton(tag2, text='Ethereum', variable=var_blockchain, value='Ethereum', command=func_blockchain).place(x=tag2_x0+210, y=tag2_y0+20)
 button_blockchain_polygon = tk.Radiobutton(tag2, text='Polygon', variable=var_blockchain, value='Polygon', command=func_blockchain).place(x=tag2_x0+310, y=tag2_y0+20)
+
+label_supply = tk.StringVar()
+label_supply.set(r'Supply :')
+tk.Label(tag2, textvariable=label_supply, font=('Arial', 12)).place(x=tag2_x0+80, y=tag2_y0+50)
+var_supply = tk.StringVar()
+var_supply.set('1')
+entry_supply = tk.Entry(tag2, textvariable=var_supply, font=('Arial', 12), state='disable')
+entry_supply.place(x=tag2_x0+210, y=tag2_y0+50, width=100)
 
 tk.Label(tag2, text='Trying to write code', font=('Arial', 15)).place(x=tag2_x0+170, y=tag2_y0+240)
 tk.Label(tag2, text='Please wait patiently', font=('Arial', 15)).place(x=tag2_x0+170, y=tag2_y0+270)
@@ -355,6 +438,8 @@ try:
     var_nft_price.set(datalist_rb[12])
     var_first.set(datalist_rb[13])
     var_blockchain.set(datalist_rb[14])
+    var_supply.set(datalist_rb[15])
+    func_blockchain()
     func_first()
 except:
     print('Save Error')
